@@ -6,8 +6,11 @@ public class Beat
 {
 	public float time;
 	public float duration;
+	public float startPosition;
+	public bool hit = false;
 
 	private Image _beatImage;
+	
 
 	public Beat(float time)
 	{
@@ -24,16 +27,24 @@ public class Beat
 	public void Create(Image beatImage)
 	{
 		_beatImage = beatImage;
+		Vector3 p = GetPosition();
+		p.y = startPosition;
+		UpdatePosition(p);
 	}
 
 	public void UpdatePosition(Vector3 position)
 	{
-		_beatImage.rectTransform.position = position;
+		_beatImage.transform.position = position;
 	}
 
 	public Vector3 GetPosition()
 	{
-		return _beatImage.rectTransform.position;
+		return _beatImage.transform.position;
+	}
+
+	public void Destroy()
+	{
+		GameObject.Destroy(_beatImage.gameObject);
 	}
 
 }
