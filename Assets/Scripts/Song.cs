@@ -8,32 +8,48 @@ namespace TheDarkVoid
 	{
 		public SongInfo info;
 		public AudioClip song;
-		public List<Beat> beats;
+		public List<Track> tracks;
+		public int trackCount;
 
-		public Song(SongInfo info, AudioClip song)
+		public Song(SongInfo info, AudioClip song, int trackCount)
 		{
 			this.info = info;
 			this.song = song;
-			this.beats = new List<Beat>();
+			this.trackCount = trackCount;
+			FillTracks(trackCount);
 		}
 
-		public Song(SongInfo info, AudioClip song, List<Beat> beats)
+		public Song(SongInfo info, AudioClip song, List<Track> tracks)
 		{
 			this.info = info;
 			this.song = song;
-			this.beats = beats;
+			this.trackCount = tracks.Count;
+			this.tracks = tracks;
 		}
 
-		public Song(AudioClip song)
+		public Song(AudioClip song, int trackCount)
 		{
-			this.info = new SongInfo("no title", "no artist", "no album", "no year");
+			this.info = new SongInfo("no title", "no artist", "no album", "no year", "normal");
 			this.song = song;
-			this.beats = new List<Beat>();
+			this.trackCount = trackCount;
+			FillTracks(trackCount);
 		}
 
-		public void SetBeats(List<Beat> beats)
+		public void SetTrack(List<Beat> beats, int track)
 		{
-			this.beats = beats;
+			tracks[track].beats = beats;
+		}
+
+		public void SetTracks(List<Track> tracks)
+		{
+			this.tracks = tracks;
+		}
+
+		void FillTracks(int count)
+		{
+			this.tracks = new List<Track>(trackCount);
+			for(int i = 0; i <= count; i++)
+				this.tracks.Add(new Track());
 		}
 	}
 }
