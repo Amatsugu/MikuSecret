@@ -13,6 +13,7 @@ namespace TheDarkVoid
 		private float _curTime;
 		private Image _image;
 		private Color _startCol;
+		private Color _clearCol;
 
 		public void Set(Vector2 velocity, float lifeTime, Color color)
 		{
@@ -20,7 +21,8 @@ namespace TheDarkVoid
 			this._lifeTime = lifeTime;
 			this._curPosition = transform.position;
 			_image = GetComponent<Image>();
-			_image.color = _startCol = color;
+			_image.color = _clearCol = _startCol = color;
+			_clearCol.a = 0;
 			Destroy(gameObject, _lifeTime);
 		}
 
@@ -30,7 +32,8 @@ namespace TheDarkVoid
 			this._lifeTime = lifeTime;
 			this._curPosition = transform.position;
 			_image = GetComponent<Image>();
-			_startCol = _image.color;
+			_startCol = _clearCol = _image.color;
+			_clearCol.a = 0;
 			Destroy(gameObject, _lifeTime);
 		}
 

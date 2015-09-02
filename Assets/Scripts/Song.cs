@@ -48,7 +48,7 @@ namespace TheDarkVoid
 		void FillTracks(int count)
 		{
 			this.tracks = new List<Track>(trackCount);
-			for(int i = 0; i <= count; i++)
+			for(int i = 0; i < count; i++)
 				this.tracks.Add(new Track());
 		}
 	}
