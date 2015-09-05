@@ -10,14 +10,16 @@ namespace TheDarkVoid
 		public float duration;
 		public float startPosition;
 		public bool hit = false;
+		public float hitStart = float.NegativeInfinity;
+		public float startAcc;
 
 		private Image _beatImage;
-
+		private Image _trail;
 
 		public Beat(float time)
 		{
 			this.time = time;
-			this.duration = 0;
+			this.duration = .8f;
 		}
 
 		public Beat(float time, float duration)
@@ -34,9 +36,21 @@ namespace TheDarkVoid
 			UpdatePosition(p);
 		}
 
+		public void Create(Image beatImage, Image trail)
+		{
+			Create(beatImage);
+			_trail = trail;
+		}
+
 		public void UpdatePosition(Vector3 position)
 		{
 			_beatImage.transform.position = position;
+		}
+
+		public void UpdatePosition(Vector3 position, float trailHeight)
+		{
+			_beatImage.transform.position = position;
+			_trail.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, trailHeight);
 		}
 
 		public Vector3 GetPosition()
@@ -48,6 +62,5 @@ namespace TheDarkVoid
 		{
 			GameObject.Destroy(_beatImage.gameObject);
 		}
-
 	}
 }

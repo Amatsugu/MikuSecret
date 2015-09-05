@@ -17,6 +17,7 @@ namespace TheDarkVoid
 		public GameObject beatObject;
 		public GameObject particle;
 		public GameObject trackImage;
+		public GameObject trailImage;
 		public float hitZoneOffset;
 		public Transform UIcanvas;
 		public Transform beatCanvas;
@@ -61,7 +62,7 @@ namespace TheDarkVoid
 			//Assign default controls
 			_controls = new ControlMap().AddMap(new KeyMap(), _trackCount);
 			//Assign beats
-			for (float i = 1.64f; i <= 100; i += 0.646f)
+			for (float i = 1.64f; i <= 100; i += 2 * 0.646f)
 			{
 				if (t >= _trackCount)
 					t = 0;
@@ -83,9 +84,20 @@ namespace TheDarkVoid
 				foreach (Beat b in track)
 				{
 					b.startPosition = _basePositions[i].y;
-					Image B = CreateUIImage(beatObject, _basePositions[i], beatCanvas);
+					Transform beatP;
+					Image B = CreateUIImage(beatObject, _basePositions[i], beatCanvas, out beatP);
+					if (b.duration <= 0)
+						b.Create(B);
+					else
+					{
+						//Create long beat
+						float trailLenght = Mathf.Lerp(_basePositions[i].y, hitZoneOffset, b.duration/leadTime);
+						Image trail = CreateUIImage(trailImage, new Vector3(0, 0, 0), beatP);
+						trail.color = _song.tracks[i].color;
+						trail.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, trailLenght);
+						b.Create(B, trail);
+					}
 					B.color = _song.tracks[i].color;
-					b.Create(B);
 				}
 				//Create Track lanes
 				Vector2 pos = new Vector2(_basePositions[i].x, hitZoneOffset);
@@ -94,7 +106,6 @@ namespace TheDarkVoid
 				Debug.Log(_trackCount);
 				//Assign default keys to controlmap
 				_controls.AddKey(KeyCode.Space, i, _trackCount);
-				//trackI.rectTransform.localScale = new Vector3(fullWidth, Screen.height-hitZoneOffset);
 			}
 		}
 
@@ -123,41 +134,93 @@ namespace TheDarkVoid
 					//Move the beats towards the hitzone based on th ecurrent progress of the audio track
 					Vector3 p = b.GetPosition();
 					p.y = Mathf.Lerp(b.startPosition, hitZoneOffset, 1 - ((b.time - _curProgress) / leadTime));
-					b.UpdatePosition(p);
-					//Calcuate end of long beat
-					float beatEnd = Mathf.Lerp(b.startPosition, hitZoneOffset, 1 - ((b.time + b.duration - _curProgress) / leadTime));
-					float beatLength = beatEnd - p.y;
+					if(b.duration <= 0 && _curProgress >= b.time + b.duration)
+						b.UpdatePosition(p);
+					else
+					{
+						float trailHeight = Mathf.Lerp(_basePositions[i].y, hitZoneOffset, 1-((b.duration - (b.time - _curProgress)) / leadTime));
+						b.UpdatePosition(p, trailHeight);
+					}
+
 					//Marks missed beats for removal
-					if (_curProgress - b.time > hitRange + hitZoneSize)
+					if (_curProgress - b.time - b.duration > hitRange + hitZoneSize)
 					{
 						_beatsToRemove.Add(b);
 						_targetRemovalTrack.Add(i);
 					}
 					//Checks the accuary of an attempted hit
-					if (Input.GetKeyDown(_controls.GetKey(i, _trackCount)))
+					KeyCode key = _controls.GetKey(i, _trackCount);
+					if (b.duration <= 0)
 					{
-						//Checks if there was a hit
-						if (Mathf.Abs(_curProgress - b.time) <= hitRange)
+						if (Input.GetKeyDown(key))
 						{
-							//Marks a beat as being hit
-							b.hit = true;
-							//Calculates the hit accuracy
-							float error = Mathf.Abs((_curProgress - b.time) - hitRange / 2);
-							error /= hitRange;
-							//Resolves the point value of a hit based on an error cruve
-							float hitValue = errorCurve.Evaluate(error);
-							//Adds scire
-							score += hitValue * beatValue;
-							scoreText.text = score.ToString();
-							//Creates a particle burst proportional to the point value of the hit
-							SpawnParticles((int)(hitValue * hitParticleCount), b.GetPosition(), hitValue, _song.tracks[i].color);
-							//Marks the for removal beat
-							_beatsToRemove.Add(b);
-							_targetRemovalTrack.Add(i);
+							//Checks if there was a hit
+							if (Mathf.Abs(_curProgress - b.time) <= hitRange)
+							{
+								//Marks a beat as being hit
+								b.hit = true;
+								//Calculates the hit accuracy
+								float hitValue = CalculateAcc(b.time);
+								//Adds scire
+								score += hitValue * beatValue;
+								scoreText.text = score.ToString();
+								//Creates a particle burst proportional to the point value of the hit
+								SpawnParticles((int)(hitValue * hitParticleCount), b.GetPosition(), hitValue, _song.tracks[i].color);
+								//Marks the beat for removal
+								_beatsToRemove.Add(b);
+								_targetRemovalTrack.Add(i);
+							}
+							//Checks for a miss
+							else if (Mathf.Abs(_curProgress - b.time) <= hitRange + hitZoneSize)
+								Debug.Log("Miss");
 						}
-						//Checks for a miss
-						else if (Mathf.Abs(_curProgress - b.time) <= hitRange + hitZoneSize)
-							Debug.Log("Miss");
+					}
+					else
+					{
+						//Start the long beat
+						if (float.IsNegativeInfinity(b.hitStart) && !b.hit)
+						{
+							if (Mathf.Abs(_curProgress - b.time) <= hitRange)
+								if (Input.GetKeyDown(key))
+								{
+									b.startAcc = CalculateAcc(b.time);
+									b.hitStart = _curProgress;
+									SpawnParticles((int)(b.startAcc * hitParticleCount), b.GetPosition(), b.startAcc, _song.tracks[i].color);
+								}
+						}
+						else
+						{
+							//Sustain the long beat
+							if (Input.GetKey(key))
+							{
+								if (_curProgress <= b.time + b.duration)
+								{
+									score += Mathf.Round(beatValue * Time.deltaTime);
+									SpawnParticles((int)Mathf.Round(hitParticleCount * Time.deltaTime * b.startAcc), b.GetPosition(), b.startAcc, _song.tracks[i].color);
+									scoreText.text = score.ToString();
+								}
+							}
+							//End the long beat
+							if (Input.GetKeyUp(key))
+							{
+								b.hit = true;
+								if (Mathf.Abs(_curProgress - b.time - b.duration) <= hitRange)
+								{
+									//Calculates hit accuracy
+									float hitValue = CalculateAcc(b.time - b.duration);
+									//Adds scire
+									score += hitValue * beatValue;
+									scoreText.text = score.ToString();
+								}
+								else
+								{
+									Debug.Log("Miss, Long");
+								}
+								//Marks the beat for removal 
+								_beatsToRemove.Add(b);
+								_targetRemovalTrack.Add(i);
+							}
+						}
 					}
 				}
 			}
@@ -181,6 +244,15 @@ namespace TheDarkVoid
 			return g.GetComponent<Image>();
 		}
 
+		//Alternate version that outputs the image transform
+		Image CreateUIImage(Object obj, Vector2 pos, Transform parent, out Transform t)
+		{
+			GameObject g = Instantiate(obj, pos, Quaternion.identity) as GameObject;
+			t = g.transform;
+			t.SetParent(parent, false);
+			return g.GetComponent<Image>();
+		}
+
 		//Creates a burst fo particles
 		void SpawnParticles(int ammount, Vector3 pos, float speedRatio, Color color)
 		{
@@ -191,6 +263,16 @@ namespace TheDarkVoid
 				Particle p = g.GetComponent<Particle>();
 				p.Set(new Vector2(Random.Range(-particleSpeed, particleSpeed), Random.Range(0, particleSpeed)) * speedRatio, particleLifeTime, color);
 			}
+		}
+
+		//Calculate the hit accuracy
+		float CalculateAcc(float t)
+		{
+			float error = Mathf.Abs((_curProgress - t) - hitRange / 2);
+			error /= hitRange;
+			//Resolves the point value of a hit based on an error cruve
+			float hitValue = errorCurve.Evaluate(error);
+			return hitValue;
 		}
 	}
 }
