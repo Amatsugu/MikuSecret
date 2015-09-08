@@ -48,14 +48,19 @@
   <ItemGroup>
      <Compile Include="Assets\Scripts\Beat.cs" />
      <Compile Include="Assets\Scripts\ControlMap.cs" />
+     <Compile Include="Assets\Scripts\DataSerializer.cs" />
+     <Compile Include="Assets\Scripts\Editor.cs" />
      <Compile Include="Assets\Scripts\FPS.cs" />
      <Compile Include="Assets\Scripts\KeyMap.cs" />
      <Compile Include="Assets\Scripts\Particle.cs" />
      <Compile Include="Assets\Scripts\Rhythm.cs" />
+     <Compile Include="Assets\Scripts\SColor.cs" />
      <Compile Include="Assets\Scripts\Sequencer.cs" />
      <Compile Include="Assets\Scripts\Song.cs" />
      <Compile Include="Assets\Scripts\SongInfo.cs" />
      <Compile Include="Assets\Scripts\Track.cs" />
+     <Compile Include="Assets\Scripts\VolumeSlider.cs" />
+     <None Include="Assets\ProtoBuf\unity\protobuf-net.xml" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>
@@ -64,6 +69,9 @@
  </Reference>
  <Reference Include="UnityEngine.Analytics">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/UnityAnalytics/UnityEngine.Analytics.dll</HintPath>
+ </Reference>
+ <Reference Include="protobuf-net">
+ <HintPath>C:/Users/Khamraj/Documents/GitHub/MikuSecret/Assets/ProtoBuf/unity/protobuf-net.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.iOS.Extensions.Xcode">
  <HintPath>C:/Program Files/Unity/Editor/Data/PlaybackEngines/iOSSupport/UnityEditor.iOS.Extensions.Xcode.dll</HintPath>

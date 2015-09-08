@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -45,9 +46,12 @@ namespace TheDarkVoid
 		private List<int> _targetRemovalTrack = new List<int>();
 		private int _trackCount;
 		private ControlMap _controls;
+		private string _dataPath;
 
 		void Start()
 		{
+			//Set the Data path
+			_dataPath = Application.dataPath + "/Songs/";
 			//Cache the audio source
 			_src = GetComponent<AudioSource>();
 			//get the song length
@@ -55,58 +59,11 @@ namespace TheDarkVoid
 			//Cache the size of the progressBar
 			_progressBarSize = progressBar.rectTransform.localScale;
 			//Generate the song
-			_song = new Song(_src.clip, 6);
-			int t = 0;
-			//Cache trackCount
-			_trackCount = _song.trackCount;
-			//Assign default controls
-			_controls = new ControlMap().AddMap(new KeyMap(), _trackCount);
-			//Assign beats
-			for (float i = 1.64f; i <= 100; i += 2 * 0.646f)
-			{
-				if (t >= _trackCount)
-					t = 0;
-				_song.tracks[t].AddBeat(new Beat(i));
-				t++;
-			}
-			//Assign track positions
-			for (int i = 0; i <= _trackCount; i++)
-				_basePositions.Add(Vector2.zero);
-			//Get beat width
-			float beatWidth = beatObject.GetComponent<Image>().rectTransform.rect.width;
-			//Calculate track spacing;
-			float fullWidth = beatWidth + trackSpacing;
-			//Create all beats
-			for (int i = 0; i < _trackCount; i++)
-			{
-				List<Beat> track = _song.tracks[i].beats;
-				_basePositions[i] = new Vector2(((i - ((_trackCount - 1f) / 2f)) * fullWidth), Screen.height);
-				foreach (Beat b in track)
-				{
-					b.startPosition = _basePositions[i].y;
-					Transform beatP;
-					Image B = CreateUIImage(beatObject, _basePositions[i], beatCanvas, out beatP);
-					if (b.duration <= 0)
-						b.Create(B);
-					else
-					{
-						//Create long beat
-						float trailLenght = Mathf.Lerp(_basePositions[i].y, hitZoneOffset, b.duration/leadTime);
-						Image trail = CreateUIImage(trailImage, new Vector3(0, 0, 0), beatP);
-						trail.color = _song.tracks[i].color;
-						trail.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, trailLenght);
-						b.Create(B, trail);
-					}
-					B.color = _song.tracks[i].color;
-				}
-				//Create Track lanes
-				Vector2 pos = new Vector2(_basePositions[i].x, hitZoneOffset);
-				Image trackI = CreateUIImage(trackImage, pos, UIcanvas);
-				trackI.color = _song.tracks[i].color;
-				Debug.Log(_trackCount);
-				//Assign default keys to controlmap
-				_controls.AddKey(KeyCode.Space, i, _trackCount);
-			}
+			//GenerateSong();
+			//_song = null;
+			byte[] songData = File.ReadAllBytes(_dataPath + "Song.SongData");
+			_song = Song.loadSong(songData);
+			CreatePlayFeild();
 		}
 
 		void Update()
@@ -134,11 +91,16 @@ namespace TheDarkVoid
 					//Move the beats towards the hitzone based on th ecurrent progress of the audio track
 					Vector3 p = b.GetPosition();
 					p.y = Mathf.Lerp(b.startPosition, hitZoneOffset, 1 - ((b.time - _curProgress) / leadTime));
-					if(b.duration <= 0 && _curProgress >= b.time + b.duration)
+					if(b.duration <= 0)
 						b.UpdatePosition(p);
 					else
 					{
-						float trailHeight = Mathf.Lerp(_basePositions[i].y, hitZoneOffset, 1-((b.duration - (b.time - _curProgress)) / leadTime));
+						//Calculate the trail length
+						float pos = b.duration  + b.time;
+						pos -= _curProgress;
+						pos /= leadTime;
+                        float trailHeight = Mathf.Lerp(hitZoneOffset, _basePositions[i].y, pos);
+						trailHeight -= b.GetPosition().y;
 						b.UpdatePosition(p, trailHeight);
 					}
 
@@ -273,6 +235,71 @@ namespace TheDarkVoid
 			//Resolves the point value of a hit based on an error cruve
 			float hitValue = errorCurve.Evaluate(error);
 			return hitValue;
+		}
+
+		void GenerateSong()
+		{
+//			_song = new Song(_src.clip, 6);
+			//Cache trackCount
+			_trackCount = _song.trackCount;
+			//Assign beats
+			int t = 0;
+			for (float i = 1.64f; i <= 100; i += 2 * 0.646f)
+			{
+				if (t >= _trackCount)
+					t = 0;
+				_song.tracks[t].AddBeat(new Beat(i));
+				t++;
+			}
+			byte[] songData = _song.getSongData();
+			if (!Directory.Exists(_dataPath))
+				Directory.CreateDirectory(_dataPath);
+			File.WriteAllBytes(_dataPath + "Song.SongData", songData);
+		}
+
+		void CreatePlayFeild()
+		{
+			//Cache Track Count
+			_trackCount = _song.trackCount;
+			//Assign default controls
+			_controls = new ControlMap().AddMap(new KeyMap(), _trackCount);
+			//Assign track positions
+			for (int i = 0; i <= _trackCount; i++)
+				_basePositions.Add(Vector2.zero);
+			//Get beat width
+			float beatWidth = beatObject.GetComponent<Image>().rectTransform.rect.width;
+			//Calculate track spacing;
+			float fullWidth = beatWidth + trackSpacing;
+			//Create all beats
+			for (int i = 0; i < _trackCount; i++)
+			{
+				List<Beat> track = _song.tracks[i].beats;
+				_basePositions[i] = new Vector2(((i - ((_trackCount - 1f) / 2f)) * fullWidth), Screen.height);
+				foreach (Beat b in track)
+				{
+					b.startPosition = _basePositions[i].y;
+					Transform beatP;
+					Image B = CreateUIImage(beatObject, _basePositions[i], beatCanvas, out beatP);
+					if (b.duration <= 0)
+						b.Create(B);
+					else
+					{
+						//Create long beat
+						float trailLenght = Mathf.Lerp(_basePositions[i].y, hitZoneOffset, b.duration / leadTime);
+						Image trail = CreateUIImage(trailImage, new Vector3(0, 0, 0), beatP);
+						trail.color = _song.tracks[i].color;
+						trail.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, trailLenght);
+						b.Create(B, trail);
+					}
+					B.color = _song.tracks[i].color;
+				}
+				//Create Track lanes
+				Vector2 pos = new Vector2(_basePositions[i].x, hitZoneOffset);
+				Image trackI = CreateUIImage(trackImage, pos, UIcanvas);
+				trackI.color = _song.tracks[i].color;
+				//Assign default keys to controlmap
+				_controls.AddKey(KeyCode.Space, i, _trackCount);
+			}
 		}
 	}
 }

@@ -1,12 +1,16 @@
+using ProtoBuf;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 
 namespace TheDarkVoid
 {
+	[ProtoContract]
 	public class Beat
 	{
+		[ProtoMember(1)]
 		public float time;
+		[ProtoMember(2)]
 		public float duration;
 		public float startPosition;
 		public bool hit = false;
@@ -15,6 +19,11 @@ namespace TheDarkVoid
 
 		private Image _beatImage;
 		private Image _trail;
+
+		public Beat()
+		{
+
+		}
 
 		public Beat(float time)
 		{

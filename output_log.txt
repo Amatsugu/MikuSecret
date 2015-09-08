@@ -1,2 +1,0 @@
-There should be 'MikuSecret_Data'
-folder next to the executable

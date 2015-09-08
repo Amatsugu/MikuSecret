@@ -1,24 +1,30 @@
 using UnityEngine;
+using ProtoBuf;
 using System.Collections;
 using System.Collections.Generic;
 
 namespace TheDarkVoid
 {
+	[ProtoContract]
 	public class Track
 	{
 		//public
+		[ProtoMember(1)]
 		public List<Beat> beats = new List<Beat>();
-		public Color color;
+		[ProtoMember(2)]
+		public SColor Scol;
+		public Color color
+		{
+			get { return Scol.color; }
+		}
 
 		public Track()
 		{
-			this.color = new Color(Random.Range(0f,1f), Random.Range(0f,0f), Random.Range(0f,1f), 1f);
-			Debug.Log(this.color);
 		}
 
 		public Track(Color color)
 		{
-			this.color = color;
+			this.Scol = new SColor(color);
 		}
 
 		public void AddBeat(Beat beat)
