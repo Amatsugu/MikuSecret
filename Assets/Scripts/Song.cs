@@ -58,9 +58,14 @@ namespace TheDarkVoid
 			FillTracks(trackCount);
 		}
 
-		public void LoadAudioClip()
+		public IEnumerator LoadAudioClip()
 		{
-			//TODO: Load Audio clip
+			//Debug.Log("file:///" + Application.dataPath + "/Music/Song.wav");
+            WWW file = new WWW("file:///" + Application.dataPath + "/Music/Song.wav");
+			_song = file.GetAudioClip(false, false);
+			while(_song.loadState != AudioDataLoadState.Loaded)
+				yield return file;
+			Debug.Log("loaded");
 		}
 
 		public void SetTrack(List<Beat> beats, int track)

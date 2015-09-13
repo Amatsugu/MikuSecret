@@ -37,7 +37,7 @@ namespace TheDarkVoid
 
 		//Private
 		private AudioSource _src;
-		private Vector3 _progressBarSize;
+		private Vector3 _progressBarSize = new Vector3();
 		private float _songLength;
 		private float _curProgress;
 		private Song _song;
@@ -55,7 +55,6 @@ namespace TheDarkVoid
 			//Cache the audio source
 			_src = GetComponent<AudioSource>();
 			//get the song length
-			_songLength = _src.clip.length;
 			//Cache the size of the progressBar
 			_progressBarSize = progressBar.rectTransform.localScale;
 			//Generate the song
@@ -63,11 +62,25 @@ namespace TheDarkVoid
 			//_song = null;
 			byte[] songData = File.ReadAllBytes(_dataPath + "Song.SongData");
 			_song = Song.loadSong(songData);
-			CreatePlayFeild();
+			StartCoroutine(_song.LoadAudioClip());
+			Debug.Log("Test");
+			//_src.clip = _song.song;
+			//_songLength = _src.clip.length;
 		}
 
 		void Update()
 		{
+			if(_song.song.loadState != AudioDataLoadState.Loaded)
+			{
+				return;
+			}else if(_src.clip == null)
+			{
+				_src.clip = _song.song;
+				if (_src.clip != null)
+					_songLength = _src.clip.length;
+				CreatePlayFeild();
+				_src.Play();
+			}
 			//Render Time
 			_curProgress = _src.time;
 			int m = (int)(_curProgress / 60);
