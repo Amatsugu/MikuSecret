@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
+using Mp3Sharp;
+using System;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
@@ -25,11 +27,13 @@ public class FileExplorer : MonoBehaviour
 	private AudioSource _src;
 	private string _selectedFile;
 	private RectTransform _scrollView;
+	private Mp3Stream _mp3Stream;
+	private bool _errored = false;
 
 	void Start()
 	{
 		//List Valid File types
-		string[] tmp = { ".ogg", ".wav", ".aiff", ".aif", ".mod", ".it", ".s3m", ".xm" };
+		string[] tmp = {".mp3", ".ogg", ".wav", ".aiff", ".aif", ".mod", ".it", ".s3m", ".xm" };
 		_extentions.AddRange(tmp);
 		//Cache the scroll view's rect
 		_scrollView = canvas.GetComponent<RectTransform>();
@@ -41,18 +45,6 @@ public class FileExplorer : MonoBehaviour
 		ListDirectoryItems();
 	}
 
-	void Update()
-	{
-		//Wait for a song to be loaded and play it
-		if (_song == null)
-			return;
-		if (_song.loadState == AudioDataLoadState.Loaded && !_src.isPlaying)
-		{
-			_src.clip = _song;
-			_src.Play();
-		}
-	}
-
 	//Set the current browsing directory
 	void SetCurrentDirectory(string path)
 	{
@@ -60,7 +52,6 @@ public class FileExplorer : MonoBehaviour
 		_dataPath = _dataPath.Replace('/', Path.DirectorySeparatorChar);
 		curDirText.text = _dataPath;
 		//Directory.
-		Debug.Log(_dataPath);
 	}
 
 	//List all directories and valid files in the curreny directory
@@ -68,8 +59,17 @@ public class FileExplorer : MonoBehaviour
 	{
 		//Reset the UI listing
 		ClearOldDirectoryItem();
-		//Get the file list
-		_files.AddRange(Directory.GetFiles(_dataPath, "*.*"));
+		try
+		{
+			//Get the file list
+			_files.AddRange(Directory.GetFiles(_dataPath, "*.*"));
+		}catch
+		{
+			//Catch permission errors and recover
+			MoveUpDirectory();
+			Debug.Log("Errored");
+			return;
+		}
 		List<string> invalid = new List<string>();
 		//Select invalid file types
 		foreach (string s in _files)
@@ -155,19 +155,22 @@ public class FileExplorer : MonoBehaviour
 	//Recive the onClick event from UI elements
 	void ItemClicked(string item)
 	{
-		Debug.Log(item);
 		if (item == "..")
 		{
 			MoveUpDirectory();
 		}
 		else
 		{
-			if (_extentions.Contains(Path.GetExtension(item)))
+			string ext = Path.GetExtension(item);
+			if (_extentions.Contains(ext))
 			{
-				_src.Stop();
-				_src.clip = null;
-				_song = null;
-				StartCoroutine(LoadSongFile(item));
+				ClearSelection();
+				if(ext != ".mp3")
+					StartCoroutine(LoadSongFile(item));
+				else
+				{
+					LoadMp3File(item);
+				}
 				_selectedFile = item;
 				selectedFileText.text = "File: " + Path.GetFileName(item);
 				songNameField.text = Path.GetFileNameWithoutExtension(item);
@@ -184,7 +187,6 @@ public class FileExplorer : MonoBehaviour
 	void MoveUpDirectory()
 	{
 		string[] p = _dataPath.Split(Path.DirectorySeparatorChar);
-		Debug.Log(p.Length + "|" + p[0]);
 		string newPath = "";
 		if (p.Length > 2)
 		{
@@ -202,7 +204,6 @@ public class FileExplorer : MonoBehaviour
 		}
 		SetCurrentDirectory(newPath);
 		ListDirectoryItems();
-		Debug.Log(newPath);
 	}
 	
 	//Load an audio file
@@ -213,6 +214,47 @@ public class FileExplorer : MonoBehaviour
 		_song = file.GetAudioClip(false, false);
 		while (_song.loadState != AudioDataLoadState.Loaded)
 			yield return file;
+		_src.clip = _song;
+		_src.Play();
+	}
+
+	//Load Mp3
+	void LoadMp3File(string path)
+	{
+		_mp3Stream = new Mp3Stream(path);
+		Debug.Log(_mp3Stream.Length);
+		Debug.Log(_mp3Stream.Format);
+		//return;
+		byte[] mp3Bytes = new byte[_mp3Stream.Length];
+
+		int bytesReturned = -1;
+		int totalBytes = 0;
+		Debug.Log("load start");
+		while (bytesReturned != 0)
+		{
+			bytesReturned = _mp3Stream.Read(mp3Bytes, 0, mp3Bytes.Length);
+			totalBytes += bytesReturned;
+		}
+		Debug.Log(totalBytes);
+		Debug.Log("load end");
+		if(bytesReturned == 0)
+		{
+			_song = new AudioClip();
+			float[] fData = BytesToFloats(mp3Bytes);
+            _src.clip.SetData(fData, 0);
+		}
+	}
+
+	float[] BytesToFloats(byte[] bytes)
+	{
+		float[] floatArr = new float[bytes.Length / 4];
+		for (int i = 0; i < floatArr.Length; i++)
+		{
+			if (BitConverter.IsLittleEndian)
+				Array.Reverse(bytes, i * 4, 4);
+			floatArr[i] = BitConverter.ToSingle(bytes, i * 4) / 0x80000000;
+		}
+		return floatArr;
 	}
 
 	public void ClearSelection()
