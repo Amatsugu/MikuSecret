@@ -62,10 +62,20 @@ namespace TheDarkVoid
 			//_song = null;
 			byte[] songData = File.ReadAllBytes(_dataPath + "Song.SongData");
 			_song = Song.loadSong(songData);
-			StartCoroutine(_song.LoadAudioClip());
-			Debug.Log("Test");
+			EventManager.StartListening("loadSong", SongReady);
+			StartCoroutine(_song.LoadAudioClip("loadSong"));
 			//_src.clip = _song.song;
 			//_songLength = _src.clip.length;
+		}
+
+		void SongReady()
+		{
+			EventManager.StopListening("loadSong", SongReady);
+			_src.clip = _song.song;
+			if (_src.clip != null)
+				_songLength = _src.clip.length;
+			CreatePlayFeild();
+			_src.Play();
 		}
 
 		void Update()
@@ -73,13 +83,6 @@ namespace TheDarkVoid
 			if(_song.song.loadState != AudioDataLoadState.Loaded)
 			{
 				return;
-			}else if(_src.clip == null)
-			{
-				_src.clip = _song.song;
-				if (_src.clip != null)
-					_songLength = _src.clip.length;
-				CreatePlayFeild();
-				_src.Play();
 			}
 			//Render Time
 			_curProgress = _src.time;
@@ -211,23 +214,6 @@ namespace TheDarkVoid
 			_targetRemovalTrack.Clear();
 		}
 
-		//Instantiates a UI Image at a specficed position, and with a spefiied parent
-		Image CreateUIImage(Object obj, Vector2 pos, Transform parent)
-		{
-			GameObject g = Instantiate(obj, pos, Quaternion.identity) as GameObject;
-			g.transform.SetParent(parent, false);
-			return g.GetComponent<Image>();
-		}
-
-		//Alternate version that outputs the image transform
-		Image CreateUIImage(Object obj, Vector2 pos, Transform parent, out Transform t)
-		{
-			GameObject g = Instantiate(obj, pos, Quaternion.identity) as GameObject;
-			t = g.transform;
-			t.SetParent(parent, false);
-			return g.GetComponent<Image>();
-		}
-
 		//Creates a burst fo particles
 		void SpawnParticles(int ammount, Vector3 pos, float speedRatio, Color color)
 		{
@@ -292,14 +278,14 @@ namespace TheDarkVoid
 				{
 					b.startPosition = _basePositions[i].y;
 					Transform beatP;
-					Image B = CreateUIImage(beatObject, _basePositions[i], beatCanvas, out beatP);
+					Image B = Utils.CreateUIImage(beatObject, _basePositions[i], beatCanvas, out beatP);
 					if (b.duration <= 0)
 						b.Create(B);
 					else
 					{
 						//Create long beat
 						float trailLenght = Mathf.Lerp(_basePositions[i].y, hitZoneOffset, b.duration / leadTime);
-						Image trail = CreateUIImage(trailImage, new Vector3(0, 0, 0), beatP);
+						Image trail = Utils.CreateUIImage(trailImage, new Vector3(0, 0, 0), beatP);
 						trail.color = _song.tracks[i].color;
 						trail.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, trailLenght);
 						b.Create(B, trail);
@@ -308,7 +294,7 @@ namespace TheDarkVoid
 				}
 				//Create Track lanes
 				Vector2 pos = new Vector2(_basePositions[i].x, hitZoneOffset);
-				Image trackI = CreateUIImage(trackImage, pos, UIcanvas);
+				Image trackI = Utils.CreateUIImage(trackImage, pos, UIcanvas);
 				trackI.color = _song.tracks[i].color;
 				//Assign default keys to controlmap
 				_controls.AddKey(KeyCode.Space, i, _trackCount);

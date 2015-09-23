@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using Mp3Sharp;
+using TagLib;
 using System;
 using System.IO;
 using System.Collections;
@@ -14,6 +15,9 @@ public class FileExplorer : MonoBehaviour
 	public GameObject directoryItem;
 	public Text curDirText;
 	public Text selectedFileText;
+	public Text titleText;
+	public Text artistText;
+	public Text albumText;
 	public InputField songNameField;
 	//Private
 	private List<string> _directories = new List<string>();
@@ -28,12 +32,11 @@ public class FileExplorer : MonoBehaviour
 	private string _selectedFile;
 	private RectTransform _scrollView;
 	private Mp3Stream _mp3Stream;
-	private bool _errored = false;
 
 	void Start()
 	{
 		//List Valid File types
-		string[] tmp = {".mp3", ".ogg", ".wav", ".aiff", ".aif", ".mod", ".it", ".s3m", ".xm" };
+		string[] tmp = {".ogg", ".wav", ".mod", ".it", ".s3m", ".xm" };
 		_extentions.AddRange(tmp);
 		//Cache the scroll view's rect
 		_scrollView = canvas.GetComponent<RectTransform>();
@@ -43,6 +46,11 @@ public class FileExplorer : MonoBehaviour
 		SetCurrentDirectory(Application.dataPath + "");
 		//List the items in the directory
 		ListDirectoryItems();
+	}
+
+	void Update()
+	{
+		//Debug.Log();
 	}
 
 	//Set the current browsing directory
@@ -172,8 +180,24 @@ public class FileExplorer : MonoBehaviour
 					LoadMp3File(item);
 				}
 				_selectedFile = item;
+				TagLib.File file = TagLib.File.Create(item);
+				Tag t = file.Tag;
+				Debug.Log(file.Tag.FirstPerformer);
 				selectedFileText.text = "File: " + Path.GetFileName(item);
-				songNameField.text = Path.GetFileNameWithoutExtension(item);
+				titleText.text = "Title: " + t.Title;
+				if (ext == ".wav")
+				{
+					artistText.text = "Artist: " + t.FirstAlbumArtist;
+					albumText.text = "Album: " + t.Album;
+				}else
+				{
+					artistText.text = "Artist: " + t.FirstPerformer;
+					albumText.text = "Album: " + t.Album;
+				}
+				string title = t.Title;
+				if (title == null)
+					title = Path.GetFileNameWithoutExtension(item);
+                songNameField.text = title;
 			}
 			else
 			{

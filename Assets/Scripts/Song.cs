@@ -19,10 +19,11 @@ namespace TheDarkVoid
 			get
 			{
 				if (_song == null)
-					LoadAudioClip();
+					LoadAudioClip("");
 				return _song;
 			}
 		}
+		public bool isLoaded = false;
 
 		[ProtoMember(4)]
 		private string songPath;
@@ -30,7 +31,7 @@ namespace TheDarkVoid
 
 		public Song()
 		{
-
+			
 		}
 
 		public Song(SongInfo info, string songPath, int trackCount)
@@ -58,14 +59,16 @@ namespace TheDarkVoid
 			FillTracks(trackCount);
 		}
 
-		public IEnumerator LoadAudioClip()
+		public IEnumerator LoadAudioClip(string action)
 		{
 			//Debug.Log("file:///" + Application.dataPath + "/Music/Song.wav");
             WWW file = new WWW("file:///" + Application.dataPath + "/Music/Song.wav");
 			_song = file.GetAudioClip(false, false);
 			while(_song.loadState != AudioDataLoadState.Loaded)
 				yield return file;
-			Debug.Log("loaded");
+			isLoaded = true;
+			if(action != "")
+				EventManager.TriggerEvent(action);
 		}
 
 		public void SetTrack(List<Beat> beats, int track)
