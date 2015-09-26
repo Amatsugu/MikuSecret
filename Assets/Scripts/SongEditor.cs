@@ -13,12 +13,14 @@ namespace TheDarkVoid
 			sec
 		}
 		//Public
-		public float timeScale;
 		public Transform timeline;
 		public GameObject timeMarker;
+		public Image songLengthBar;
 		public float minThreshold = 20f;
+		public float scrollPos = 0f;
 
 		//Private
+		private float _timeScale;
 		private Song _curSong;
 		private string _dataPath;
 		private float _songLength;
@@ -39,40 +41,49 @@ namespace TheDarkVoid
 			EventManager.StopListening("songLoaded", SongReady);
 			Debug.Log("loaded");
 			_songLength = _curSong.song.length;
+			Debug.Log(_songLength);
 			CreateTimelineSeconds();
-			UpdateTimeline(timeScale);
+			UpdateTimeline();
 		}
 
 		void CreateTimelineSeconds()
 		{
 			DestroyMarkers();
 			int min = 0;
+			int sec = 0;
 			for (int i = 0; i < (int)_songLength; i++)
 			{
 				Transform marker;
-				Utils.CreateUIImage(timeMarker, new Vector2(i * timeScale, 0), timeline, out marker);
-				int sec = (int)(i - (Mathf.Round(i / 60) * 60));
-				string val = "";
-				if (sec == 0)
-				{
-					val = "<b>" + min + "m</b>" ;
-					min++;
-				} else
-					val = sec + "s";
-                marker.GetComponent<Text>().text = val;
+				Utils.CreateUIImage(timeMarker, new Vector2(i * _timeScale, 0), timeline, out marker);
+                marker.GetComponent<Text>().text = min + ":" + sec;
                 _timeMarkers.Add(marker);
+				if (sec >= 60)
+				{
+					min += 1;
+					sec = 0;
+				}
+				else
+					sec++;
             }
 		}
 
 		void CreateTimelineMinutes()
 		{
 			DestroyMarkers();
-			for (int i = 0; i < (int)(_songLength / 60); i++)
+			int sec = 0;
+			int min = 0;
+			for (int i = 0; i < (int)(_songLength / 10); i++)
 			{
 				Transform marker;
 				Utils.CreateUIImage(timeMarker, new Vector2(), timeline, out marker);
-				marker.GetComponent<Text>().text = i + "m";
+				marker.GetComponent<Text>().text = min + ":" + sec;
 				_timeMarkers.Add(marker);
+				if(sec >= 60)
+				{
+					min += 1;
+					sec = 0;
+				}else
+					sec += 10;
 			}
 		}
 
@@ -85,14 +96,19 @@ namespace TheDarkVoid
 			_timeMarkers.Clear();
 		}
 
-		public void UpdateTimeline(float timeScale)
+		public void ZoomTimeline(float zoomLevel)
 		{
-			this.timeScale = timeScale;
-			if(timeScale <= minThreshold && _mode == TimelineMode.sec)
+			_timeScale = zoomLevel;
+			UpdateTimeline();
+		}
+
+		public void UpdateTimeline()
+		{
+			if(_timeScale <= minThreshold && _mode == TimelineMode.sec)
 			{
 				_mode = TimelineMode.min;
 				CreateTimelineMinutes();
-			}else if(timeScale >= minThreshold && _mode == TimelineMode.min)
+			}else if(_timeScale >= minThreshold && _mode == TimelineMode.min)
 			{
 				_mode = TimelineMode.sec;
 				CreateTimelineSeconds();
@@ -100,11 +116,20 @@ namespace TheDarkVoid
 			for(int i = 0; i < _timeMarkers.Count; i++)
 			{
 				Vector2 pos = _timeMarkers[i].localPosition;
-				pos.x = i * timeScale;
+				pos.x = i * _timeScale;
 				if (_mode == TimelineMode.min)
-					pos.x *= 60f;
+					pos.x *= 10f;
+				pos.x -= (scrollPos * _timeScale);
 				_timeMarkers[i].localPosition = pos;
 			}
+			songLengthBar.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _songLength * _timeScale);
+		}
+
+		public void TimelineSeek(float position)
+		{
+
+
+			UpdateTimeline();
 		}
 	}
 }
