@@ -15,6 +15,8 @@ namespace TheDarkVoid
 		//Public
 		public Transform timeline;
 		public GameObject timeMarker;
+		public Slider timeScaleSlider;
+		public DynamicWidthSlider seekSlider;
 		public Image songLengthBar;
 		public float minThreshold = 20f;
 		public float scrollPos = 0f;
@@ -24,6 +26,8 @@ namespace TheDarkVoid
 		private Song _curSong;
 		private string _dataPath;
 		private float _songLength;
+		private float _seekPos;
+		private float _timelineWidth;
 		private TimelineMode _mode;
 		private List<Transform> _timeMarkers = new List<Transform>();
 
@@ -42,7 +46,13 @@ namespace TheDarkVoid
 			Debug.Log("loaded");
 			_songLength = _curSong.song.length;
 			Debug.Log(_songLength);
+			Image tl = timeline.GetComponent<Image>();
+			_timelineWidth = tl.rectTransform.rect.width;
+			Debug.Log(_timelineWidth);
+			timeScaleSlider.minValue = _timelineWidth / _songLength;
+			EventManager.StartListening(seekSlider.eventCallback, TimelineSeek);
 			CreateTimelineSeconds();
+			ZoomTimeline(timeScaleSlider.value);
 			UpdateTimeline();
 		}
 
@@ -98,7 +108,9 @@ namespace TheDarkVoid
 
 		public void ZoomTimeline(float zoomLevel)
 		{
+			//Debug.Log(zoomLevel);
 			_timeScale = zoomLevel;
+			seekSlider.width = (_timelineWidth/(_songLength*_timeScale));
 			UpdateTimeline();
 		}
 
@@ -119,16 +131,15 @@ namespace TheDarkVoid
 				pos.x = i * _timeScale;
 				if (_mode == TimelineMode.min)
 					pos.x *= 10f;
-				pos.x -= (scrollPos * _timeScale);
+				pos.x -= (_seekPos * _timeScale);
 				_timeMarkers[i].localPosition = pos;
 			}
 			songLengthBar.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _songLength * _timeScale);
 		}
 
-		public void TimelineSeek(float position)
+		public void TimelineSeek()
 		{
-
-
+			scrollPos = _seekPos = seekSlider.value * _songLength;
 			UpdateTimeline();
 		}
 	}

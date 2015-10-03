@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
-using Mp3Sharp;
-using TagLib;
+//using Mp3Sharp;
+//using TagLib;
 using System;
 using System.IO;
 using System.Collections;
@@ -31,7 +31,7 @@ public class FileExplorer : MonoBehaviour
 	private AudioSource _src;
 	private string _selectedFile;
 	private RectTransform _scrollView;
-	private Mp3Stream _mp3Stream;
+	//private Mp3Stream _mp3Stream;
 
 	void Start()
 	{
@@ -177,10 +177,11 @@ public class FileExplorer : MonoBehaviour
 					StartCoroutine(LoadSongFile(item));
 				else
 				{
-					LoadMp3File(item);
+					//LoadMp3File(item);
 				}
 				_selectedFile = item;
-				TagLib.File file = TagLib.File.Create(item);
+				//TODO: Fix taglib
+				/*TagLib.File file = TagLib.File.Create(item);
 				Tag t = file.Tag;
 				Debug.Log(file.Tag.FirstPerformer);
 				selectedFileText.text = "File: " + Path.GetFileName(item);
@@ -197,7 +198,7 @@ public class FileExplorer : MonoBehaviour
 				string title = t.Title;
 				if (title == null)
 					title = Path.GetFileNameWithoutExtension(item);
-                songNameField.text = title;
+                songNameField.text = title;*/
 			}
 			else
 			{
@@ -243,7 +244,7 @@ public class FileExplorer : MonoBehaviour
 	}
 
 	//Load Mp3
-	void LoadMp3File(string path)
+	/*void LoadMp3File(string path)
 	{
 		_mp3Stream = new Mp3Stream(path);
 		Debug.Log(_mp3Stream.Length);
@@ -267,7 +268,7 @@ public class FileExplorer : MonoBehaviour
 			float[] fData = BytesToFloats(mp3Bytes);
             _src.clip.SetData(fData, 0);
 		}
-	}
+	}*/
 
 	float[] BytesToFloats(byte[] bytes)
 	{
