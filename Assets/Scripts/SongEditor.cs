@@ -17,9 +17,10 @@ namespace TheDarkVoid
 		public GameObject timeMarker;
 		public Slider timeScaleSlider;
 		public DynamicWidthSlider seekSlider;
+		public ClickDragable playHead;
 		public Image songLengthBar;
 		public float minThreshold = 20f;
-		public float scrollPos = 0f;
+		public float playHeadPos = 0;
 
 		//Private
 		private float _timeScale;
@@ -51,6 +52,9 @@ namespace TheDarkVoid
 			Debug.Log(_timelineWidth);
 			timeScaleSlider.minValue = _timelineWidth / _songLength;
 			EventManager.StartListening(seekSlider.eventCallback, TimelineSeek);
+			EventManager.StartListening(playHead.eventCallback, SetPlayHead);
+			float xO = tl.rectTransform.position.x;
+            playHead.SetMinMax(xO, _timelineWidth + xO);
 			CreateTimelineSeconds();
 			ZoomTimeline(timeScaleSlider.value);
 			UpdateTimeline();
@@ -67,33 +71,32 @@ namespace TheDarkVoid
 				Utils.CreateUIImage(timeMarker, new Vector2(i * _timeScale, 0), timeline, out marker);
                 marker.GetComponent<Text>().text = min + ":" + sec;
                 _timeMarkers.Add(marker);
-				if (sec >= 60)
+				sec++;
+				if (sec >= 59)
 				{
 					min += 1;
 					sec = 0;
 				}
-				else
-					sec++;
             }
 		}
 
 		void CreateTimelineMinutes()
 		{
 			DestroyMarkers();
-			int sec = 0;
 			int min = 0;
+			int sec = 0;
 			for (int i = 0; i < (int)(_songLength / 10); i++)
 			{
 				Transform marker;
 				Utils.CreateUIImage(timeMarker, new Vector2(), timeline, out marker);
 				marker.GetComponent<Text>().text = min + ":" + sec;
 				_timeMarkers.Add(marker);
-				if(sec >= 60)
+				sec += 10;
+				if(sec >= 59)
 				{
 					min += 1;
 					sec = 0;
-				}else
-					sec += 10;
+				}
 			}
 		}
 
@@ -135,12 +138,27 @@ namespace TheDarkVoid
 				_timeMarkers[i].localPosition = pos;
 			}
 			songLengthBar.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _songLength * _timeScale);
+			SetPlayHead();
 		}
 
 		public void TimelineSeek()
 		{
-			scrollPos = _seekPos = seekSlider.value * _songLength;
+			_seekPos = seekSlider.value * _songLength;
 			UpdateTimeline();
+		}
+
+		public void SetPlayHead()
+		{
+			playHeadPos = playHead.value;
+			int m, s, ns;
+			float phT = (playHeadPos-playHead.min) / _timelineWidth;
+			phT *= (seekSlider.width * _songLength);
+			phT += _seekPos;
+			m = (int)(phT / 60);
+			s = ((int)phT- m*60);
+			ns = (int)((phT- m*60 - s) * 100); 
+			string time = m + ":" + s + ":" + ns;
+			playHead.dragable.GetComponentInChildren<Text>().text = time;
 		}
 	}
 }

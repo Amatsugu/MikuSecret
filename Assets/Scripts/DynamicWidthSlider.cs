@@ -36,6 +36,10 @@ namespace TheDarkVoid
 
 		void Start()
 		{
+			if (eventCallback == "" || eventCallback == " ")
+			{
+				eventCallback = gameObject.name;
+			}
 			RectTransform rt = GetComponent<Image>().rectTransform;
 			Debug.Log(rt.position);
 			_xMin = rt.position.x;
