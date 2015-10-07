@@ -24,6 +24,7 @@ namespace TheDarkVoid
 		{
 			this.min = min;
 			this.max = max;
+			this.value = min;
 		}
 
 		public void OnDrag(PointerEventData eventData)

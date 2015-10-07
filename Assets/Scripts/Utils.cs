@@ -22,5 +22,19 @@ namespace TheDarkVoid
 			t.SetParent(parent, false);
 			return g.GetComponent<Image>();
 		}
+
+		//Converts an integer to a string that includes a specified ammount of preceeding zeros 
+		public static string FormatZeros(int value, int zeros)
+		{
+			string output = value.ToString();
+			if(output.Length < zeros)
+			{
+				for(int i = output.Length; i < zeros; i++)
+				{
+					output = "0" + output;
+				}
+			}
+			return output;
+		}
 	}
 }

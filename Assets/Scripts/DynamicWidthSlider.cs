@@ -29,8 +29,6 @@ namespace TheDarkVoid
 		public string eventCallback;
 		//Private
 		private float _width = 0;
-		private float _clickStartPos = -1;
-		private float _clickEndPos = -1;
 		private float _clickOffset = -1;
 		private float _xMin, _xMax;
 
@@ -41,7 +39,6 @@ namespace TheDarkVoid
 				eventCallback = gameObject.name;
 			}
 			RectTransform rt = GetComponent<Image>().rectTransform;
-			Debug.Log(rt.position);
 			_xMin = rt.position.x;
 			_xMax = rt.rect.width;
 			width = 0.2f;

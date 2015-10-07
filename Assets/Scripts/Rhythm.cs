@@ -85,7 +85,7 @@ namespace TheDarkVoid
 				return;
 			}
 			//Render Time
-			_curProgress = _src.time;
+			_curProgress = _src.timeSamples;
 			int m = (int)(_curProgress / 60);
 			int s = (int)_curProgress - m * 60;
 			timeText.text = m + ":" + s;
