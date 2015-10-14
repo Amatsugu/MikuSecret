@@ -21,9 +21,18 @@ namespace TheDarkVoid
 		public DynamicWidthSlider seekSlider;
 		public ClickDragable playHead;
 		public Image songProgressBar;
-		public Transform trackScrollView;
+		public RectTransform trackScrollView;
 		public float minThreshold = 20f;
 		public float playHeadPos = 0;
+		public float padding = 5f;
+		public float timeScale
+		{
+			get { return _timeScale;  }
+		}
+		public float seekPos
+		{
+			get { return _seekPos; }
+		}
 
 		//Private
 		private float _timeScale;
@@ -71,6 +80,9 @@ namespace TheDarkVoid
 			CreateTimeline(1);
 			ZoomTimeline(timeScaleSlider.value);
 			UpdateTimeline();
+			RenderTracks();
+			UITrackManager._SONG_EDITOR = this;
+			_tracks[0].track = _curSong.tracks[0];
 		}
 
 		//Create markers of specified increment
@@ -206,6 +218,7 @@ namespace TheDarkVoid
 		public void AddTrack()
 		{
 			_curSong.AddTrack(new Track());
+			RenderTracks();
 		}
 
 		//Render a list of all tracks into the scrollview
@@ -215,21 +228,23 @@ namespace TheDarkVoid
 				return;
 			DestroyTracks();
 			Image trackSample = null;
+			float yPos = -padding;
 			foreach (Track t in _curSong.tracks)
 			{
 				Transform track;
-				trackSample = Utils.CreateUIImage(trackPrefab, Vector2.zero, trackScrollView, out track);
+				trackSample = Utils.CreateUIImage(trackPrefab, new Vector2(195, yPos), trackScrollView, out track);
 				_tracks.Add(track.GetComponent<UITrackManager>());
+				_tracks[_tracks.Count - 1].Set(seekSlider.width, _timelineWidth, _songLength);
+				yPos -= trackSample.rectTransform.rect.height + padding;
 			}
-			Image scrollView = trackScrollView.GetComponent<Image>();
-			scrollView.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, trackSample.rectTransform.rect.height * _tracks.Count);
+			trackScrollView.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, ((_tracks[0].GetComponent<Image>().rectTransform.rect.height + padding) * _tracks.Count) + padding);
 		}
 
 		//Destroy exsisting tracks
 		public void DestroyTracks()
 		{
 			foreach (UITrackManager t in _tracks)
-				Destroy(t);
+				t.Destroy();
 			_tracks.Clear();
 		}
 	}
