@@ -27,7 +27,7 @@ namespace TheDarkVoid
 		public float padding = 5f;
 		public float timeScale
 		{
-			get { return _timeScale;  }
+			get { return _timeScale; }
 		}
 		public float seekPos
 		{
@@ -67,7 +67,7 @@ namespace TheDarkVoid
 		void SongReady()
 		{
 			EventManager.StopListening("songLoaded", SongReady);
-			Debug.Log("Song Loaded... in " +  (Time.time - _loadStartTime) + "s");
+			Debug.Log("Song Loaded... in " + (Time.time - _loadStartTime) + "s");
 			_songLength = _curSong.song.length;
 			_audio.clip = _curSong.song;
 			Image tl = timeline.GetComponent<Image>();
@@ -76,12 +76,11 @@ namespace TheDarkVoid
 			EventManager.StartListening(seekSlider.eventCallback, TimelineSeek);
 			EventManager.StartListening(playHead.eventCallback, SetPlayHead);
 			float xOff = tl.rectTransform.position.x;
-            playHead.SetMinMax(xOff, _timelineWidth + xOff);
+			playHead.SetMinMax(xOff, _timelineWidth + xOff);
 			CreateTimeline(1);
 			ZoomTimeline(timeScaleSlider.value);
-			UpdateTimeline();
+			RenderTimeline();
 			RenderTracks();
-			UITrackManager._SONG_EDITOR = this;
 			_tracks[0].track = _curSong.tracks[0];
 		}
 
@@ -95,10 +94,10 @@ namespace TheDarkVoid
 			{
 				Transform marker;
 				Utils.CreateUIImage(timeMarker, new Vector2(), timeline, out marker);
-				marker.GetComponent<Text>().text = min + ":" + Utils.FormatZeros(sec,0);
+				marker.GetComponent<Text>().text = min + ":" + Utils.FormatZeros(sec, 0);
 				_timeMarkers.Add(marker);
 				sec += incremnt;
-				if(sec >= 60)
+				if (sec >= 60)
 				{
 					min += 1;
 					sec = 0;
@@ -109,7 +108,7 @@ namespace TheDarkVoid
 		//Get rid of the old markers to be replaced
 		void DestroyMarkers()
 		{
-			foreach(Transform m in _timeMarkers)
+			foreach (Transform m in _timeMarkers)
 			{
 				Destroy(m.gameObject);
 			}
@@ -121,23 +120,29 @@ namespace TheDarkVoid
 		{
 			//Debug.Log(zoomLevel);
 			_timeScale = zoomLevel;
-			seekSlider.width = (_timelineWidth/(_songLength*_timeScale));
-			UpdateTimeline();
+			seekSlider.width = (_timelineWidth / (_songLength * _timeScale));
+			RenderTimeline();
 		}
 
 		//Update the timeline and render the markers in the correct positions
-		public void UpdateTimeline()
+		public void RenderTimeline()
 		{
-			if(_timeScale <= minThreshold && _mode == TimelineMode.sec)
+			if (_timeScale <= minThreshold && _mode == TimelineMode.sec)
 			{
 				_mode = TimelineMode.min;
 				CreateTimeline(10);
-			}else if(_timeScale >= minThreshold && _mode == TimelineMode.min)
+			}
+			else if (_timeScale >= minThreshold && _mode == TimelineMode.min)
 			{
 				_mode = TimelineMode.sec;
 				CreateTimeline(1);
 			}
-			for(int i = 0; i < _timeMarkers.Count; i++)
+			UpdateTimeline();
+		}
+
+		public void UpdateTimeline()
+		{
+			for (int i = 0; i < _timeMarkers.Count; i++)
 			{
 				Vector2 pos = _timeMarkers[i].localPosition;
 				pos.x = i * _timeScale;
@@ -145,6 +150,10 @@ namespace TheDarkVoid
 					pos.x *= 10f;
 				pos.x -= (_seekPos * _timeScale);
 				_timeMarkers[i].localPosition = pos;
+			}
+			foreach(UITrackManager t in _tracks)
+			{
+				t.UpdateBeats();
 			}
 			Vector2 p = songProgressBar.rectTransform.localPosition;
 			p.x = -(_seekPos * _timeScale);
@@ -179,6 +188,8 @@ namespace TheDarkVoid
 		//Update the current progress through the song
 		public void SetTimeReadout()
 		{
+			if (!_audio.isPlaying)
+				CancelInvoke("SetTimeReadout");
 			float phT = _audio.time;
 			int m, s, ns;
 			m = (int)(phT / 60);
@@ -190,23 +201,31 @@ namespace TheDarkVoid
 		}
 
 		//Timeline navigation
+		//Make a step in time
 		public void TimeStep(int dir)
 		{
-			dir = (dir >= 0) ? 1 : -1;
+			dir = (dir >= 0) ? 10 : -10;
+			_audio.time += dir;
 		}
 
+		//Change the playback speed
 		public void SpeedPlay(int dir)
 		{
 			dir = (dir >= 0) ? 1 : -1;
+			_audio.pitch += dir;
 		}
 
+		//Play the song
 		public void Play()
 		{
 			_audio.Play();
 			SetAudioTime();
+			CancelInvoke("SetTimeReadout");
 			InvokeRepeating("SetTimeReadout", 0, .01f);
+			_audio.pitch = 1;
 		}
 
+		//Stop the song
 		public void Pause()
 		{
 			_audio.Stop();
@@ -234,10 +253,19 @@ namespace TheDarkVoid
 				Transform track;
 				trackSample = Utils.CreateUIImage(trackPrefab, new Vector2(195, yPos), trackScrollView, out track);
 				_tracks.Add(track.GetComponent<UITrackManager>());
-				_tracks[_tracks.Count - 1].Set(seekSlider.width, _timelineWidth, _songLength);
+				_tracks[_tracks.Count - 1].Set(this, seekSlider.width, _timelineWidth, _songLength, t);
+				//_tracks[_tracks.Count - 1].UpdateBeats();
 				yPos -= trackSample.rectTransform.rect.height + padding;
 			}
 			trackScrollView.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, ((_tracks[0].GetComponent<Image>().rectTransform.rect.height + padding) * _tracks.Count) + padding);
+		}
+
+		public void UpdateTracks()
+		{
+			foreach(UITrackManager t in _tracks)
+			{
+				t.UpdateBeats();
+			}
 		}
 
 		//Destroy exsisting tracks

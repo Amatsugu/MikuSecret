@@ -52,7 +52,6 @@ namespace TheDarkVoid
 			handle.rectTransform.localPosition = pos;
 			value = pos.x / _xMax;
 			EventManager.TriggerEvent(eventCallback);
-			Debug.Log("drag");
 		}
 
 		public void OnBeginDrag(PointerEventData eventData)

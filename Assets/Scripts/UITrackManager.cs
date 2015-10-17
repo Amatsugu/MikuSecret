@@ -20,53 +20,98 @@ namespace TheDarkVoid
 		}
 		public GameObject beatPrefab;
 		public Track track;
-		public static SongEditor _SONG_EDITOR;
+		public SongEditor _SONG_EDITOR;
+		public Transform _beatParent;
 
 		//Private
-		private List<Transform> _beats = new List<Transform>();
+		private List<UIBeatManager> _beats = new List<UIBeatManager>();
 		private GameObject _instance;
 		private Image _image;
 		private float _seekWidth;
 		private float _songLength;
 		private float _timeLineWidth;
 		private float _timeScale;
+		private float _beatWidth;
+		private float _left;
 
-		public void Set(float seekWidth, float timeLineWidth, float songLength)
+		//Set the inital values of the Track
+		public void Set(SongEditor SE, float seekWidth, float timeLineWidth, float songLength, Track track)
 		{
 			instance = gameObject;
+			_left = _beatParent.localPosition.x;
+			_SONG_EDITOR = SE;
+			_image = instance.GetComponent<Image>();
+			this.track = track;
+			_image.color = track.color;
 			_seekWidth = seekWidth;
 			_songLength = songLength;
 			_timeLineWidth = timeLineWidth;
+			_beatWidth = beatPrefab.GetComponent<Image>().rectTransform.rect.width;
+			RenderBeats();
+			AddBeat(0);
 		}
 
+		//Destory this object
 		public void Destroy()
 		{
 			Destroy(instance);
 		}
 
+		//Add a beat to the track
 		public void AddBeat(float time)
 		{
 			track.AddBeat(new Beat(time));
-			UpdateBeats();
+			RenderBeats();
 		}
 
-		public void UpdateBeats()
+		//Render all beats to the track
+		void RenderBeats()
 		{
+			DestroyBeats();
 			foreach (Beat b in track.beats)
 			{
 				Transform beat;
-				Utils.CreateUIImage(beatPrefab, new Vector2(b.time * _SONG_EDITOR.timeScale, 0), instance.transform, out beat);
-				_beats.Add(beat);
+				Utils.CreateUIImage(beatPrefab, new Vector2((b.time - _SONG_EDITOR.seekPos) * _SONG_EDITOR.timeScale, 0), _beatParent, out beat);
+				UIBeatManager bm = beat.GetComponent<UIBeatManager>();
+				bm.Set(b);
+                _beats.Add(bm);
+			}
+			UpdateBeats();
+		}
+
+		//Udate Beats
+		public void UpdateBeats()
+		{
+			foreach(UIBeatManager b in _beats)
+			{
+				Vector2 pos = b.positon;
+				pos.x = (b.time - _SONG_EDITOR.seekPos) * _SONG_EDITOR.timeScale;
+				pos.x -= _left;
+				pos.x += _beatWidth / 2;
+				b.positon = pos;
 			}
 		}
 
+		//Destroy exsisting beats
+		void DestroyBeats()
+		{
+			foreach(UIBeatManager b in _beats)
+			{
+				b.Destroy();
+			}
+			_beats.Clear();
+		}
+
+		//On Click event handler
 		public void OnPointerClick(PointerEventData eventData)
 		{
-			float left = _image.rectTransform.position.x;
-			float pos = eventData.position.x - left;
+			//TODO: Fix this!
+			float pos = eventData.position.x;
+			pos = (pos < 0) ? 0 : pos;
 			float time = pos / _timeLineWidth;
-			time *= (_seekWidth * _songLength);
-			time += _SONG_EDITOR.seekPos;
+			time += _SONG_EDITOR.seekSlider.value;
+			time *= _songLength;
+			AddBeat(time);
 			Debug.Log(time);
 		}
 	}
