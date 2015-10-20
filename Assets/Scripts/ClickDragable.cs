@@ -9,6 +9,10 @@ namespace TheDarkVoid
 		//Public
 		public float min, max;
 		public float value;
+		public float offsetValue
+		{
+			get { return value - min; }
+		}
 		public string eventCallback;
 		public Image dragable;
 

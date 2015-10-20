@@ -33,6 +33,10 @@ namespace TheDarkVoid
 		{
 			get { return _seekPos; }
 		}
+		public float songLength
+		{
+			get { return _songLength; }
+		}
 
 		//Private
 		private float _timeScale;
@@ -253,7 +257,7 @@ namespace TheDarkVoid
 				Transform track;
 				trackSample = Utils.CreateUIImage(trackPrefab, new Vector2(195, yPos), trackScrollView, out track);
 				_tracks.Add(track.GetComponent<UITrackManager>());
-				_tracks[_tracks.Count - 1].Set(this, seekSlider.width, _timelineWidth, _songLength, t);
+				_tracks[_tracks.Count - 1].Set(this, t);
 				//_tracks[_tracks.Count - 1].UpdateBeats();
 				yPos -= trackSample.rectTransform.rect.height + padding;
 			}

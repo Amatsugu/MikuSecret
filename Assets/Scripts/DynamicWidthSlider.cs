@@ -48,7 +48,7 @@ namespace TheDarkVoid
 		{
 
 			Vector2 pos = handle.rectTransform.localPosition;
-			pos.x = Mathf.Clamp(Input.mousePosition.x - _xMin -_clickOffset, 0, _xMax - (_width * _xMax));
+			pos.x = Mathf.Clamp(Input.mousePosition.x - _xMin - _clickOffset, 0, _xMax - (_width * _xMax));
 			handle.rectTransform.localPosition = pos;
 			value = pos.x / _xMax;
 			EventManager.TriggerEvent(eventCallback);

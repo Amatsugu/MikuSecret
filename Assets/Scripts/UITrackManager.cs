@@ -14,10 +14,6 @@ namespace TheDarkVoid
 			get { return _instance; }
 			set { _instance = value; _image = _instance.GetComponent<Image>(); }
 		}
-		public float timeScale
-		{
-			set { _timeScale = value; }
-		}
 		public GameObject beatPrefab;
 		public Track track;
 		public SongEditor _SONG_EDITOR;
@@ -27,26 +23,17 @@ namespace TheDarkVoid
 		private List<UIBeatManager> _beats = new List<UIBeatManager>();
 		private GameObject _instance;
 		private Image _image;
-		private float _seekWidth;
-		private float _songLength;
-		private float _timeLineWidth;
-		private float _timeScale;
-		private float _beatWidth;
 		private float _left;
 
 		//Set the inital values of the Track
-		public void Set(SongEditor SE, float seekWidth, float timeLineWidth, float songLength, Track track)
+		public void Set(SongEditor SE, Track track)
 		{
 			instance = gameObject;
-			_left = _beatParent.localPosition.x;
+			_left = _beatParent.position.x;
 			_SONG_EDITOR = SE;
 			_image = instance.GetComponent<Image>();
 			this.track = track;
 			_image.color = track.color;
-			_seekWidth = seekWidth;
-			_songLength = songLength;
-			_timeLineWidth = timeLineWidth;
-			_beatWidth = beatPrefab.GetComponent<Image>().rectTransform.rect.width;
 			RenderBeats();
 			AddBeat(0);
 		}
@@ -74,7 +61,7 @@ namespace TheDarkVoid
 				Utils.CreateUIImage(beatPrefab, new Vector2((b.time - _SONG_EDITOR.seekPos) * _SONG_EDITOR.timeScale, 0), _beatParent, out beat);
 				UIBeatManager bm = beat.GetComponent<UIBeatManager>();
 				bm.Set(b);
-                _beats.Add(bm);
+				_beats.Add(bm);
 			}
 			UpdateBeats();
 		}
@@ -82,12 +69,10 @@ namespace TheDarkVoid
 		//Udate Beats
 		public void UpdateBeats()
 		{
-			foreach(UIBeatManager b in _beats)
+			foreach (UIBeatManager b in _beats)
 			{
 				Vector2 pos = b.positon;
 				pos.x = (b.time - _SONG_EDITOR.seekPos) * _SONG_EDITOR.timeScale;
-				pos.x -= _left;
-				pos.x += _beatWidth / 2;
 				b.positon = pos;
 			}
 		}
@@ -95,7 +80,7 @@ namespace TheDarkVoid
 		//Destroy exsisting beats
 		void DestroyBeats()
 		{
-			foreach(UIBeatManager b in _beats)
+			foreach (UIBeatManager b in _beats)
 			{
 				b.Destroy();
 			}
@@ -105,14 +90,13 @@ namespace TheDarkVoid
 		//On Click event handler
 		public void OnPointerClick(PointerEventData eventData)
 		{
-			//TODO: Fix this!
-			float pos = eventData.position.x;
-			pos = (pos < 0) ? 0 : pos;
-			float time = pos / _timeLineWidth;
-			time += _SONG_EDITOR.seekSlider.value;
-			time *= _songLength;
-			AddBeat(time);
-			Debug.Log(time);
+			if (eventData.button == PointerEventData.InputButton.Left)
+			{
+				float pos = (eventData.position.x - _left) + (_SONG_EDITOR.seekPos * _SONG_EDITOR.timeScale);
+				float time = pos / (_SONG_EDITOR.songLength * _SONG_EDITOR.timeScale);
+				time *= _SONG_EDITOR.songLength;
+				AddBeat(time);
+			}
 		}
 	}
 }

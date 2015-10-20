@@ -12,7 +12,7 @@ namespace TheDarkVoid
 		[ProtoMember(1)]
 		public List<Beat> beats = new List<Beat>();
 		[ProtoMember(2)]
-		public SColor Scol;
+		public SColor Scol = SColor.random;
 		public Color color
 		{
 			get { return Scol.color; }
