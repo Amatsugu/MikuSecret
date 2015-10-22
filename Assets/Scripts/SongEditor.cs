@@ -22,6 +22,7 @@ namespace TheDarkVoid
 		public ClickDragable playHead;
 		public Image songProgressBar;
 		public RectTransform trackScrollView;
+		public GameObject trackConfigWindow;
 		public float minThreshold = 20f;
 		public float playHeadPos = 0;
 		public float padding = 5f;
@@ -49,6 +50,7 @@ namespace TheDarkVoid
 		private List<Transform> _timeMarkers = new List<Transform>();
 		private List<UITrackManager> _tracks = new List<UITrackManager>();
 		private AudioSource _audio;
+		private UITrackManager _trackToConfigure;
 
 		private float _loadStartTime;
 
@@ -270,6 +272,26 @@ namespace TheDarkVoid
 			{
 				t.UpdateBeats();
 			}
+		}
+
+		public void RemoveTrack(UITrackManager track)
+		{
+			track.Destroy();
+			_curSong.RemoveTrack(track.track);
+			_tracks.Remove(track);
+			RenderTracks();
+		}
+
+		public void ConfigureTrack(UITrackManager track)
+		{
+			_trackToConfigure = track;
+			trackConfigWindow.SetActive(true);
+		}
+		
+		public void CloseTrackConfigWindow()
+		{
+			_trackToConfigure = null;
+			trackConfigWindow.SetActive(false);
 		}
 
 		//Destroy exsisting tracks

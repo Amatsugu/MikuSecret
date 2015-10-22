@@ -44,6 +44,16 @@ namespace TheDarkVoid
 			Destroy(instance);
 		}
 
+		public void RemoveThisTrack()
+		{
+			_SONG_EDITOR.RemoveTrack(this);
+		}
+
+		public void ConfigureThisTrack()
+		{
+
+		}
+
 		//Add a beat to the track
 		public void AddBeat(float time)
 		{

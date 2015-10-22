@@ -60,7 +60,7 @@ namespace TheDarkVoid
 			//Generate the song
 			//GenerateSong();
 			//_song = null;
-			byte[] songData = File.ReadAllBytes(_dataPath + "Song.SongData");
+			byte[] songData = File.ReadAllBytes(_dataPath + "SongName/Song.SongData");
 			_song = Song.loadSong(songData);
 			EventManager.StartListening("loadSong", SongReady);
 			StartCoroutine(_song.LoadAudioClip("loadSong"));
@@ -84,14 +84,15 @@ namespace TheDarkVoid
 			{
 				return;
 			}
+			if (_curProgress > 3)
+				_src.Pause();
 			//Render Time
-			_curProgress = _src.timeSamples;
+			_curProgress = _src.time;
 			int m = (int)(_curProgress / 60);
 			int s = (int)_curProgress - m * 60;
 			timeText.text = m + ":" + s;
 			//Render Progress Bar
-			_progressBarSize.x = (_curProgress / _songLength) * Screen.width;
-			progressBar.rectTransform.localScale = _progressBarSize;
+			progressBar.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, (_curProgress / _songLength) * Screen.width);
 			//Render beat tracks
 			for (int i = 0; i < _trackCount; i++)
 			{

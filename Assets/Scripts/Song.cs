@@ -77,6 +77,18 @@ namespace TheDarkVoid
 			trackCount = tracks.Count;
 		}
 
+		public void RemoveTrack(Track track)
+		{
+			tracks.Remove(track);
+			trackCount = tracks.Count;
+		}
+
+		public void RemoveTrack(int track)
+		{
+			tracks.RemoveAt(track);
+			trackCount = tracks.Count;
+		}
+
 		public void SetTrack(List<Beat> beats, int track)
 		{
 			tracks[track].beats = beats;
