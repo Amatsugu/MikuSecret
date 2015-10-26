@@ -57,6 +57,7 @@ namespace TheDarkVoid
 		//Load the song and wait for completion 
 		void Start()
 		{
+			trackConfigWindow.SetActive(false);
 			_dataPath = Application.dataPath + "/Songs/";
 			_mode = TimelineMode.sec;
 			_curSong = Song.loadSong(File.ReadAllBytes(_dataPath + "SongName/Song.SongData"));
@@ -285,6 +286,7 @@ namespace TheDarkVoid
 		public void ConfigureTrack(UITrackManager track)
 		{
 			_trackToConfigure = track;
+			Debug.Log(track);
 			trackConfigWindow.SetActive(true);
 		}
 		

@@ -51,7 +51,7 @@ namespace TheDarkVoid
 
 		public void ConfigureThisTrack()
 		{
-
+			_SONG_EDITOR.ConfigureTrack(this);
 		}
 
 		//Add a beat to the track

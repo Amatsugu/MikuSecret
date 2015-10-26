@@ -84,8 +84,6 @@ namespace TheDarkVoid
 			{
 				return;
 			}
-			if (_curProgress > 3)
-				_src.Pause();
 			//Render Time
 			_curProgress = _src.time;
 			int m = (int)(_curProgress / 60);
