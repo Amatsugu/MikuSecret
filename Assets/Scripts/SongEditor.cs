@@ -22,7 +22,7 @@ namespace TheDarkVoid
 		public ClickDragable playHead;
 		public Image songProgressBar;
 		public RectTransform trackScrollView;
-		public GameObject trackConfigWindow;
+		public UITrackConfigWindowManager trackConfigWindow;
 		public float minThreshold = 20f;
 		public float playHeadPos = 0;
 		public float padding = 5f;
@@ -57,7 +57,7 @@ namespace TheDarkVoid
 		//Load the song and wait for completion 
 		void Start()
 		{
-			trackConfigWindow.SetActive(false);
+			trackConfigWindow.CloseWindow();
 			_dataPath = Application.dataPath + "/Songs/";
 			_mode = TimelineMode.sec;
 			_curSong = Song.loadSong(File.ReadAllBytes(_dataPath + "SongName/Song.SongData"));
@@ -243,7 +243,7 @@ namespace TheDarkVoid
 		//Add a new Track to the Song
 		public void AddTrack()
 		{
-			_curSong.AddTrack(new Track());
+			_curSong.AddTrack(new Track(SColor.random));
 			RenderTracks();
 		}
 
@@ -286,14 +286,14 @@ namespace TheDarkVoid
 		public void ConfigureTrack(UITrackManager track)
 		{
 			_trackToConfigure = track;
-			Debug.Log(track);
-			trackConfigWindow.SetActive(true);
+			trackConfigWindow.Set(track.track.name, track);
+			trackConfigWindow.OpenWindow();
 		}
 		
 		public void CloseTrackConfigWindow()
 		{
 			_trackToConfigure = null;
-			trackConfigWindow.SetActive(false);
+			trackConfigWindow.CloseWindow();
 		}
 
 		//Destroy exsisting tracks

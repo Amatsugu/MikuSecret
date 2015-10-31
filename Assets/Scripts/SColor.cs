@@ -24,11 +24,19 @@ namespace TheDarkVoid
 			}
 		}
 
-		public static SColor random
+		public static SColor Srandom
 		{
 			get
 			{
 				return new SColor(Random.Range(0,1), Random.Range(0, 1), Random.Range(0, 1));
+			}
+		}
+
+		public static Color random
+		{
+			get
+			{
+				return new Color(Random.Range(0, 1), Random.Range(0, 1), Random.Range(0, 1));
 			}
 		}
 

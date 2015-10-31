@@ -37,7 +37,6 @@ namespace TheDarkVoid
 
 		//Private
 		private AudioSource _src;
-		private Vector3 _progressBarSize = new Vector3();
 		private float _songLength;
 		private float _curProgress;
 		private Song _song;
@@ -56,7 +55,6 @@ namespace TheDarkVoid
 			_src = GetComponent<AudioSource>();
 			//get the song length
 			//Cache the size of the progressBar
-			_progressBarSize = progressBar.rectTransform.localScale;
 			//Generate the song
 			//GenerateSong();
 			//_song = null;
