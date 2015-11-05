@@ -10,5 +10,11 @@ namespace TheDarkVoid
 			SetHeader(header);
 			this.track = track;
 		}
+
+		public void SetTrackName(string trackName)
+		{
+			SetHeader(trackName);
+			track.track.name = trackName;
+		}
 	}
 }

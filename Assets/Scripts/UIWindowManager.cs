@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -43,6 +44,14 @@ namespace TheDarkVoid
 		public void CloseWindow()
 		{
 			StartCoroutine(AnimateWindow(-1));
+		}
+
+		void Update()
+		{
+			if (_windowState == 0)
+				return;
+			if (Input.GetKeyUp(KeyCode.Escape))
+				CloseWindow();
 		}
 
 		protected void UpdateWindow()

@@ -4,7 +4,7 @@ using UnityEngine.EventSystems;
 
 namespace TheDarkVoid
 {
-	public class DynamicWidthSlider : MonoBehaviour, IDragHandler, IBeginDragHandler
+	public class UIDynamicWidthSlider : MonoBehaviour, IDragHandler, IBeginDragHandler
 	{
 		//Public
 		public Image handle;

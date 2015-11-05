@@ -18,7 +18,7 @@ namespace TheDarkVoid
 		public GameObject timeMarker;
 		public GameObject trackPrefab;
 		public Slider timeScaleSlider;
-		public DynamicWidthSlider seekSlider;
+		public UIDynamicWidthSlider seekSlider;
 		public ClickDragable playHead;
 		public Image songProgressBar;
 		public RectTransform trackScrollView;
