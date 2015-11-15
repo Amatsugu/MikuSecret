@@ -36,5 +36,19 @@ namespace TheDarkVoid
 			}
 			return output;
 		}
+
+		//Transform timeline position to seconds
+		public static float TransformToTime(float position, float left)
+		{
+			float pos = (position - left) + (SongEditor.instance.seekPos * SongEditor.instance.timeScale);
+			float time = pos / (SongEditor.instance.songLength * SongEditor.instance.timeScale);
+			return time *= SongEditor.instance.songLength;
+		}
+
+		//Transform seconds to timeline position
+		public static float TransformToTimelinePos(float time)
+		{
+			return (time - SongEditor.instance.seekPos) * SongEditor.instance.timeScale;
+        }
 	}
 }

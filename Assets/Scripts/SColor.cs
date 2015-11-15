@@ -82,7 +82,7 @@ namespace TheDarkVoid
 		[ProtoMember(3)]
 		private float _b;
 		[ProtoMember(4)]
-		private float _a;
+		private float _a = 1;
 		//HSV
 		[ProtoMember(5)]
 		private float _h;
@@ -102,6 +102,7 @@ namespace TheDarkVoid
 				r = value.r;
 				g = value.g;
 				b = value.b;
+				a = value.a;
 			}
 		}
 
@@ -151,9 +152,9 @@ namespace TheDarkVoid
 
 		public void SetHSV(float H, float S, float V)
 		{
-			_h = H;
-			_s = S;
-			_v = V;
+			h = H;
+			s = S;
+			v = V;
 		}
 
 		public void GetHSV(out float H, out float S, out float V)

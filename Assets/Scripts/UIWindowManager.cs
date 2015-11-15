@@ -12,14 +12,18 @@ namespace TheDarkVoid
 		public Text headerText;
 		public string defaultTitle;
 		public bool appendMode = false;
-		public float animationScale = .5f;
-		public float blackoutOpacity = .75f;
+		public float animationScale = 2f;
+		public float blackoutOpacity = .5f;
+		public UIWindowManager confirmationWindow;
+		[HideInInspector]
+		public bool shouldClose = true;
 
 		//Private
 		private Image window;
 
 		//Protected
 		protected float _windowState = 0;
+		protected UIWindowManager parent;
 
 		void Start()
 		{
@@ -27,23 +31,48 @@ namespace TheDarkVoid
 			headerText.text = defaultTitle;
 		}
 
-		protected void SetHeader(string header)
+		void OnDisable()
+		{
+			if (confirmationWindow == null)
+				return;
+			confirmationWindow.SetActive(false);
+		}
+
+		protected void SetActive(bool state)
+		{
+			gameObject.SetActive(state);
+		}
+
+		protected UIWindowManager SetHeader(string header)
 		{
 			if (appendMode)
 				headerText.text = defaultTitle + ": \"" + header + "\"";
 			else 
 				headerText.text = header;
+			return this;
 		}
 
-		public void OpenWindow()
+		public UIWindowManager OpenWindow()
 		{
+			return OpenWindow(null);
+		}
+
+		public UIWindowManager OpenWindow(UIWindowManager parent)
+		{
+			this.parent = parent;
 			gameObject.SetActive(true);
 			StartCoroutine(AnimateWindow(1));
+			return this;
 		}
 
 		public void CloseWindow()
 		{
-			StartCoroutine(AnimateWindow(-1));
+			if(shouldClose)
+				StartCoroutine(AnimateWindow(-1));
+			else
+			{
+				confirmationWindow.OpenWindow(this);
+			}
 		}
 
 		void Update()
@@ -56,6 +85,8 @@ namespace TheDarkVoid
 
 		protected void UpdateWindow()
 		{
+			if (window == null)
+				Start();
 			Color c = window.color;
 			c.a = blackoutOpacity * (_windowState);
 			window.color = c;
@@ -63,9 +94,8 @@ namespace TheDarkVoid
 				gameObject.SetActive(false);
 		}
 
-		IEnumerator AnimateWindow(float dir)
+		protected IEnumerator AnimateWindow(float dir)
 		{
-			Debug.Log("Window Animation Start: " + dir);
 			while (true)
 			{
 				if (dir >= 0)
@@ -90,7 +120,6 @@ namespace TheDarkVoid
 				yield return new WaitForEndOfFrame();
 			}
 			UpdateWindow();
-			Debug.Log("Window Animation End");
 		}
 	}
 }

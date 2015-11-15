@@ -6,7 +6,7 @@ using System;
 
 namespace TheDarkVoid
 {
-	public class UITrackManager : MonoBehaviour, IPointerClickHandler
+	public class UITrackManager : MonoBehaviour, IPointerClickHandler, IDragHandler, IDropHandler
 	{
 		//Public
 		public GameObject instance
@@ -16,26 +16,35 @@ namespace TheDarkVoid
 		}
 		public GameObject beatPrefab;
 		public Track track;
-		public SongEditor _SONG_EDITOR;
 		public Transform _beatParent;
+		public Text trackName;
 
 		//Private
 		private List<UIBeatManager> _beats = new List<UIBeatManager>();
 		private GameObject _instance;
 		private Image _image;
 		private float _left;
+		private float _startPos;
+		private UIBeatManager _prevBeat;
 
 		//Set the inital values of the Track
-		public void Set(SongEditor SE, Track track)
+		public void Set(Track track)
 		{
 			instance = gameObject;
 			_left = _beatParent.position.x;
-			_SONG_EDITOR = SE;
 			_image = instance.GetComponent<Image>();
 			this.track = track;
 			_image.color = track.color;
+			trackName.text = track.name;
 			RenderBeats();
-			AddBeat(0);
+
+			Transform beat;
+			Utils.CreateUIImage(beatPrefab,
+				Vector2.zero,
+				_beatParent, out beat);
+			_prevBeat = beat.GetComponent<UIBeatManager>();
+			_prevBeat.Set(new Beat(0f));
+			beat.gameObject.SetActive(false);
 		}
 
 		//Destory this object
@@ -46,18 +55,23 @@ namespace TheDarkVoid
 
 		public void RemoveThisTrack()
 		{
-			_SONG_EDITOR.RemoveTrack(this);
+			SongEditor.instance.RemoveTrack(this);
 		}
 
 		public void ConfigureThisTrack()
 		{
-			_SONG_EDITOR.ConfigureTrack(this);
+			SongEditor.instance.ConfigureTrack(this);
 		}
 
 		//Add a beat to the track
 		public void AddBeat(float time)
 		{
-			track.AddBeat(new Beat(time));
+			AddBeat(time, 0);
+		}
+
+		public void AddBeat(float time, float duration)
+		{
+			track.AddBeat(new Beat(time, duration));
 			RenderBeats();
 		}
 
@@ -68,7 +82,7 @@ namespace TheDarkVoid
 			foreach (Beat b in track.beats)
 			{
 				Transform beat;
-				Utils.CreateUIImage(beatPrefab, new Vector2((b.time - _SONG_EDITOR.seekPos) * _SONG_EDITOR.timeScale, 0), _beatParent, out beat);
+				Utils.CreateUIImage(beatPrefab, new Vector2(Utils.TransformToTimelinePos(b.time) , 0), _beatParent, out beat);
 				UIBeatManager bm = beat.GetComponent<UIBeatManager>();
 				bm.Set(b);
 				_beats.Add(bm);
@@ -82,7 +96,7 @@ namespace TheDarkVoid
 			foreach (UIBeatManager b in _beats)
 			{
 				Vector2 pos = b.positon;
-				pos.x = (b.time - _SONG_EDITOR.seekPos) * _SONG_EDITOR.timeScale;
+				pos.x = (b.time - SongEditor.instance.seekPos) * SongEditor.instance.timeScale;
 				b.positon = pos;
 			}
 		}
@@ -102,11 +116,34 @@ namespace TheDarkVoid
 		{
 			if (eventData.button == PointerEventData.InputButton.Left)
 			{
-				float pos = (eventData.position.x - _left) + (_SONG_EDITOR.seekPos * _SONG_EDITOR.timeScale);
-				float time = pos / (_SONG_EDITOR.songLength * _SONG_EDITOR.timeScale);
-				time *= _SONG_EDITOR.songLength;
-				AddBeat(time);
+				if (!eventData.dragging)
+					AddBeat(Utils.TransformToTime(eventData.position.x, _left));
+				else
+				{
+					_startPos = eventData.position.x;
+					_prevBeat.instance.gameObject.SetActive(true);
+				}
 			}
+		}
+
+		public void OnDrop(PointerEventData eventData)
+		{
+			_prevBeat.instance.gameObject.SetActive(false);
+			float time = (_startPos < eventData.position.x) ?
+				Utils.TransformToTime(eventData.position.x, _left) : 
+				Utils.TransformToTime(_startPos, _left);
+			float duration = Utils.TransformToTime(Math.Abs(eventData.position.x - _startPos),
+				_left);
+            AddBeat(time, duration);
+		}
+
+		public void OnDrag(PointerEventData eventData)
+		{
+			float time = (_startPos < eventData.position.x) ? _startPos : eventData.position.x;
+			float duration = Utils.TransformToTime(Math.Abs(eventData.position.x - _startPos),
+				_left);
+			_prevBeat.positon = new Vector2(time, 0);
+			_prevBeat.duration = duration;
 		}
 	}
 }

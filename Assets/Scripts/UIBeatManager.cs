@@ -16,6 +16,13 @@ namespace TheDarkVoid
 			get { return instance.localPosition; }
 			set { instance.localPosition = value; }
 		}
+		public float duration
+		{
+			set
+			{
+				
+			}
+		}
 		public Image image;
 		public RectTransform instance;
 
@@ -25,6 +32,7 @@ namespace TheDarkVoid
 		public void Set(Beat beat)
 		{
 			_beat = beat;
+			duration = beat.duration;
 			instance = GetComponent<RectTransform>();
 			image = instance.GetComponent<Image>();
 		}

@@ -6,10 +6,11 @@ namespace TheDarkVoid
 	public class UIColorPicker : MonoBehaviour
 	{
 		//Public
-		public Color color { set { _color = new SColor(value); } get { return _color.color; } }
+		public SColor color { set { _color = value; UpdateSliders(); } get { return _color; } }
 		public UISliderColorController slider1;
 		public UISliderColorController slider2;
 		public UISliderColorController slider3;
+		public Image colorOutput;
 		public int mode { set { _mode = value; } }
 		public float s1
 		{
@@ -79,9 +80,19 @@ namespace TheDarkVoid
 		public void UpdateSliders()
 		{
 			if (_mode == 0)
+			{
 				UpdateSliders(_color.r, _color.g, _color.b);
+				slider1.SetValue(_color.r);
+				slider2.SetValue(_color.g);
+				slider3.SetValue(_color.b);
+			}
 			else
+			{
 				UpdateSliders(_color.h, _color.s, _color.v);
+				slider1.SetValue(_color.h);
+				slider2.SetValue(_color.s);
+				slider3.SetValue(_color.v);
+			}
 		}
 
 		void UpdateSliders(float s1, float s2, float s3)
@@ -98,7 +109,12 @@ namespace TheDarkVoid
 				slider2.SetColor(SColor.HSVToRGB(s1, s2, 1));
 				slider3.SetColor(SColor.HSVToRGB(s1, 1, s3));
 			}
+			//colorOutput.color = color;
 		}
 
+		void Update()
+		{
+			colorOutput.color = color.color;
+		}
 	}
 }

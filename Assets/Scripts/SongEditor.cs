@@ -13,6 +13,19 @@ namespace TheDarkVoid
 			min,
 			sec
 		}
+		//static
+		public static SongEditor SONG_EDITOR;
+		public static SongEditor instance
+		{
+			get
+			{
+				if (!SONG_EDITOR)
+				{
+					SONG_EDITOR = FindObjectOfType<SongEditor>() as SongEditor;
+				}
+				return SONG_EDITOR;
+			}
+		}
 		//Public
 		public Transform timeline;
 		public GameObject timeMarker;
@@ -73,16 +86,20 @@ namespace TheDarkVoid
 		//Prepare the UI once the song is loaded
 		void SongReady()
 		{
+			//Set Events
 			EventManager.StopListening("songLoaded", SongReady);
+			EventManager.StartListening(seekSlider.eventCallback, TimelineSeek);
+			EventManager.StartListening(playHead.eventCallback, SetPlayHead);
+			EventManager.StartListening("UpdateTrackColors", RenderTracks);
+			//Prepare Song
 			Debug.Log("Song Loaded... in " + (Time.time - _loadStartTime) + "s");
 			_songLength = _curSong.song.length;
 			_audio.clip = _curSong.song;
 			Image tl = timeline.GetComponent<Image>();
 			_timelineWidth = tl.rectTransform.rect.width;
 			timeScaleSlider.minValue = _timelineWidth / _songLength;
-			EventManager.StartListening(seekSlider.eventCallback, TimelineSeek);
-			EventManager.StartListening(playHead.eventCallback, SetPlayHead);
 			float xOff = tl.rectTransform.position.x;
+			//Create workspace
 			playHead.SetMinMax(xOff, _timelineWidth + xOff);
 			CreateTimeline(1);
 			ZoomTimeline(timeScaleSlider.value);
@@ -260,7 +277,7 @@ namespace TheDarkVoid
 				Transform track;
 				trackSample = Utils.CreateUIImage(trackPrefab, new Vector2(195, yPos), trackScrollView, out track);
 				_tracks.Add(track.GetComponent<UITrackManager>());
-				_tracks[_tracks.Count - 1].Set(this, t);
+				_tracks[_tracks.Count - 1].Set(t);
 				//_tracks[_tracks.Count - 1].UpdateBeats();
 				yPos -= trackSample.rectTransform.rect.height + padding;
 			}
