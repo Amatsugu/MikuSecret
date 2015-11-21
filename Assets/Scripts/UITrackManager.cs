@@ -18,6 +18,7 @@ namespace TheDarkVoid
 		public Track track;
 		public Transform _beatParent;
 		public Text trackName;
+		public Image image { get { return _image; } }
 
 		//Private
 		private List<UIBeatManager> _beats = new List<UIBeatManager>();

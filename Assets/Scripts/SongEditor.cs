@@ -70,7 +70,7 @@ namespace TheDarkVoid
 		//Load the song and wait for completion 
 		void Start()
 		{
-			trackConfigWindow.CloseWindow();
+			//trackConfigWindow.CloseWindow();
 			_dataPath = Application.dataPath + "/Songs/";
 			_mode = TimelineMode.sec;
 			_curSong = Song.loadSong(File.ReadAllBytes(_dataPath + "SongName/Song.SongData"));
@@ -164,6 +164,7 @@ namespace TheDarkVoid
 			UpdateTimeline();
 		}
 
+		//Update the items on the timeline
 		public void UpdateTimeline()
 		{
 			for (int i = 0; i < _timeMarkers.Count; i++)
@@ -260,8 +261,9 @@ namespace TheDarkVoid
 		//Add a new Track to the Song
 		public void AddTrack()
 		{
-			_curSong.AddTrack(new Track(SColor.random));
-			RenderTracks();
+			Track t = new Track(SColor.random);
+            _curSong.AddTrack(t);
+			SpawnTrack(t);
 		}
 
 		//Render a list of all tracks into the scrollview
@@ -270,20 +272,27 @@ namespace TheDarkVoid
 			if (_curSong.trackCount == 0)
 				return;
 			DestroyTracks();
-			Image trackSample = null;
-			float yPos = -padding;
+			//Image trackSample = null;
 			foreach (Track t in _curSong.tracks)
 			{
-				Transform track;
-				trackSample = Utils.CreateUIImage(trackPrefab, new Vector2(195, yPos), trackScrollView, out track);
-				_tracks.Add(track.GetComponent<UITrackManager>());
-				_tracks[_tracks.Count - 1].Set(t);
-				//_tracks[_tracks.Count - 1].UpdateBeats();
-				yPos -= trackSample.rectTransform.rect.height + padding;
+				SpawnTrack(t);
 			}
-			trackScrollView.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, ((_tracks[0].GetComponent<Image>().rectTransform.rect.height + padding) * _tracks.Count) + padding);
+			//trackScrollView.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, ((_tracks[0].image.rectTransform.rect.height + padding) * _tracks.Count) + padding);
 		}
 
+		//Add a new track
+		void SpawnTrack(Track t)
+		{
+			float yPos = -padding;
+			yPos -= (_tracks.Count == 0)? 0 : (_tracks[0].image.rectTransform.rect.height + padding)*_tracks.Count;
+			Transform track;
+			Image trackImage = Utils.CreateUIImage(trackPrefab, new Vector2(195, yPos), trackScrollView, out track);
+			_tracks.Add(track.GetComponent<UITrackManager>());
+			_tracks[_tracks.Count - 1].Set(t);
+			trackScrollView.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, ((_tracks[0].image.rectTransform.rect.height + padding) * _tracks.Count) + padding);
+		}
+
+		//Update the beat positions
 		public void UpdateTracks()
 		{
 			foreach(UITrackManager t in _tracks)
@@ -292,14 +301,25 @@ namespace TheDarkVoid
 			}
 		}
 
+		//Remove a track and ReSort the track list
 		public void RemoveTrack(UITrackManager track)
 		{
 			track.Destroy();
 			_curSong.RemoveTrack(track.track);
 			_tracks.Remove(track);
-			RenderTracks();
+			float y = _tracks[0].image.rectTransform.rect.height;
+            for (int i = 0; i < _tracks.Count; i++)
+			{
+				Vector2 pos = _tracks[i].image.rectTransform.localPosition;
+				pos.y = padding + ((y + padding)*i);
+				pos.y *= -1;
+				_tracks[i].image.rectTransform.localPosition = pos;
+			}
+			trackScrollView.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, ((_tracks[0].image.rectTransform.rect.height + padding) * _tracks.Count) + padding);
+			//RenderTracks();
 		}
 
+		//Open the configuration window for a selected track
 		public void ConfigureTrack(UITrackManager track)
 		{
 			_trackToConfigure = track;
@@ -307,6 +327,7 @@ namespace TheDarkVoid
 			trackConfigWindow.OpenWindow();
 		}
 		
+		//Close the configuration window and cleanup
 		public void CloseTrackConfigWindow()
 		{
 			_trackToConfigure = null;

@@ -50,5 +50,10 @@ namespace TheDarkVoid
 		{
 			return (time - SongEditor.instance.seekPos) * SongEditor.instance.timeScale;
         }
+
+		public static float Round(float n, float d)
+		{
+			return ((int)(n * d)) / d;
+		}
 	}
 }
