@@ -3,7 +3,7 @@ using UnityEngine.Events;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace TheDarkVoid
+namespace com.LuminousVector
 {
 	public class EventManager : MonoBehaviour
 	{
@@ -29,6 +29,19 @@ namespace TheDarkVoid
 				}
 				return EVENT_MANAGER;
 			}
+		}
+
+		void OnLevelWasLoaded(int level)
+		{
+			if(eventDictionary != null)
+				eventDictionary.Clear();
+		}
+
+		void Start()
+		{
+			DontDestroyOnLoad(gameObject);
+			if (FindObjectOfType<EventManager>() as EventManager != gameObject)
+				Destroy(gameObject);
 		}
 
 		void Init()

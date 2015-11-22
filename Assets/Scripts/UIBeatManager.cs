@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 
-namespace TheDarkVoid
+namespace com.LuminousVector
 {
 	public class UIBeatManager : MonoBehaviour
 	{
@@ -20,10 +20,13 @@ namespace TheDarkVoid
 		{
 			set
 			{
-				
+				_beat.duration = value;
+				trail.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Utils.TransformToTimelinePos(value));
 			}
 		}
 		public Image image;
+		public Image trail;
+		[HideInInspector]
 		public RectTransform instance;
 
 		//private
@@ -34,7 +37,6 @@ namespace TheDarkVoid
 			_beat = beat;
 			duration = beat.duration;
 			instance = GetComponent<RectTransform>();
-			image = instance.GetComponent<Image>();
 		}
 
 		public void Destroy()

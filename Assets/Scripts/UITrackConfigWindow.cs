@@ -1,9 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace TheDarkVoid
+namespace com.LuminousVector
 {
-	public class UITrackConfigWindowManager : UIWindowManager
+	public class UITrackConfigWindow : UIWindowManager
 	{
 		public InputField trackNameField;
 		public UIColorPicker colorPicker;

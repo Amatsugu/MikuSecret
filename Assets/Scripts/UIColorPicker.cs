@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace TheDarkVoid
+namespace com.LuminousVector
 {
 	public class UIColorPicker : MonoBehaviour
 	{

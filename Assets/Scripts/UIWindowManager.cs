@@ -4,7 +4,7 @@ using UnityEngine.EventSystems;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace TheDarkVoid
+namespace com.LuminousVector
 {
 	public class UIWindowManager : MonoBehaviour
 	{

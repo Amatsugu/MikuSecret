@@ -2,7 +2,7 @@ using UnityEngine;
 using ProtoBuf;
 using System.Collections;
 
-namespace TheDarkVoid
+namespace com.LuminousVector
 {
 	[ProtoContract]
 	public class SColor

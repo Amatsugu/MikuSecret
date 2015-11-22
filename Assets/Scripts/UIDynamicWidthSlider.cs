@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-namespace TheDarkVoid
+namespace com.LuminousVector
 {
 	public class UIDynamicWidthSlider : MonoBehaviour, IDragHandler, IBeginDragHandler
 	{

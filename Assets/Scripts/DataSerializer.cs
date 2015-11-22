@@ -4,7 +4,7 @@ using System.IO;
 using System.Text;
 using ProtoBuf.Meta;
 
-namespace TheDarkVoid
+namespace com.LuminousVector
 {
 	public static class DataSerializer
 	{

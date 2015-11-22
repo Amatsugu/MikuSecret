@@ -3,7 +3,7 @@ using ProtoBuf;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace TheDarkVoid
+namespace com.LuminousVector
 {
 	[ProtoContract]
 	public class Track

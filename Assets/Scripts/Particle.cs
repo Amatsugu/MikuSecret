@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 
-namespace TheDarkVoid
+namespace com.LuminousVector
 {
 	public class Particle : MonoBehaviour
 	{

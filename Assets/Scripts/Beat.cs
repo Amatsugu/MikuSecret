@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 
-namespace TheDarkVoid
+namespace com.LuminousVector
 {
 	[ProtoContract]
 	public class Beat
@@ -11,7 +11,7 @@ namespace TheDarkVoid
 		[ProtoMember(1)]
 		public float time;
 		[ProtoMember(2)]
-		public float duration;
+		public float duration = 0;
 		public float startPosition;
 		public bool hit = false;
 		public float hitStart = float.NegativeInfinity;
@@ -28,7 +28,7 @@ namespace TheDarkVoid
 		public Beat(float time)
 		{
 			this.time = time;
-			this.duration = .8f;
+			this.duration = 0;
 		}
 
 		public Beat(float time, float duration)

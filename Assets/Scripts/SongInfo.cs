@@ -2,7 +2,7 @@ using UnityEngine;
 using ProtoBuf;
 using System.Collections;
 
-namespace TheDarkVoid
+namespace com.LuminousVector
 {
 	[ProtoContract]
 	public class SongInfo
@@ -17,19 +17,22 @@ namespace TheDarkVoid
 		public string year;
 		[ProtoMember(5)]
 		public string difficulty;
+		[ProtoMember(6)]
+		public string creator;
 
 		public SongInfo()
 		{
 
 		}
 
-		public SongInfo(string title, string artist, string album, string year, string difficulty)
+		public SongInfo(string title, string artist, string album, string year, string difficulty, string creator)
 		{
 			this.title = title;
 			this.artist = artist;
 			this.album = album;
 			this.year = year;
 			this.difficulty = difficulty;
+			this.creator = creator;
 		}
 	}
 }

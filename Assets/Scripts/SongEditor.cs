@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using System.IO;
 using System.Collections.Generic;
 
-namespace TheDarkVoid
+namespace com.LuminousVector
 {
 	[RequireComponent(typeof(AudioSource))]
 	public class SongEditor : MonoBehaviour
@@ -35,7 +35,7 @@ namespace TheDarkVoid
 		public ClickDragable playHead;
 		public Image songProgressBar;
 		public RectTransform trackScrollView;
-		public UITrackConfigWindowManager trackConfigWindow;
+		public UITrackConfigWindow trackConfigWindow;
 		public float minThreshold = 20f;
 		public float playHeadPos = 0;
 		public float padding = 5f;
@@ -51,6 +51,10 @@ namespace TheDarkVoid
 		{
 			get { return _songLength; }
 		}
+		public Song curSong
+		{
+			get { return _curSong; }
+		}
 
 		//Private
 		private float _timeScale;
@@ -63,7 +67,6 @@ namespace TheDarkVoid
 		private List<Transform> _timeMarkers = new List<Transform>();
 		private List<UITrackManager> _tracks = new List<UITrackManager>();
 		private AudioSource _audio;
-		private UITrackManager _trackToConfigure;
 
 		private float _loadStartTime;
 
@@ -71,9 +74,9 @@ namespace TheDarkVoid
 		void Start()
 		{
 			//trackConfigWindow.CloseWindow();
-			_dataPath = Application.dataPath + "/Songs/";
+			_dataPath = Application.dataPath + "/Songs";
 			_mode = TimelineMode.sec;
-			_curSong = Song.loadSong(File.ReadAllBytes(_dataPath + "SongName/Song.SongData"));
+			_curSong = Song.loadSong(File.ReadAllBytes(_dataPath + "/SongName/Song.SongData"));
 			_audio = GetComponent<AudioSource>();
 			_audio.playOnAwake = false;
 			_audio.Stop();
@@ -93,6 +96,7 @@ namespace TheDarkVoid
 			EventManager.StartListening("UpdateTrackColors", RenderTracks);
 			//Prepare Song
 			Debug.Log("Song Loaded... in " + (Time.time - _loadStartTime) + "s");
+			
 			_songLength = _curSong.song.length;
 			_audio.clip = _curSong.song;
 			Image tl = timeline.GetComponent<Image>();
@@ -105,7 +109,7 @@ namespace TheDarkVoid
 			ZoomTimeline(timeScaleSlider.value);
 			RenderTimeline();
 			RenderTracks();
-			_tracks[0].track = _curSong.tracks[0];
+			//_tracks[0].track = _curSong.tracks[0];
 		}
 
 		//Create markers of specified increment
@@ -204,9 +208,7 @@ namespace TheDarkVoid
 		public void SetAudioTime()
 		{
 			playHeadPos = playHead.value;
-			float phT = (playHeadPos - playHead.min) / _timelineWidth;
-			phT *= (seekSlider.width * _songLength);
-			phT += _seekPos;
+			float phT = Utils.TransformToTime(playHeadPos, playHead.min);
 			_audio.time = phT;
 		}
 
@@ -286,7 +288,7 @@ namespace TheDarkVoid
 			float yPos = -padding;
 			yPos -= (_tracks.Count == 0)? 0 : (_tracks[0].image.rectTransform.rect.height + padding)*_tracks.Count;
 			Transform track;
-			Image trackImage = Utils.CreateUIImage(trackPrefab, new Vector2(195, yPos), trackScrollView, out track);
+			Utils.CreateUIImage(trackPrefab, new Vector2(195, yPos), trackScrollView, out track);
 			_tracks.Add(track.GetComponent<UITrackManager>());
 			_tracks[_tracks.Count - 1].Set(t);
 			trackScrollView.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, ((_tracks[0].image.rectTransform.rect.height + padding) * _tracks.Count) + padding);
@@ -322,7 +324,6 @@ namespace TheDarkVoid
 		//Open the configuration window for a selected track
 		public void ConfigureTrack(UITrackManager track)
 		{
-			_trackToConfigure = track;
 			trackConfigWindow.Set(track.track.name, track);
 			trackConfigWindow.OpenWindow();
 		}
@@ -330,7 +331,6 @@ namespace TheDarkVoid
 		//Close the configuration window and cleanup
 		public void CloseTrackConfigWindow()
 		{
-			_trackToConfigure = null;
 			trackConfigWindow.CloseWindow();
 		}
 

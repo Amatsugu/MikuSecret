@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-namespace TheDarkVoid
+namespace com.LuminousVector
 {
 	public class UIConfirmationWindow : UIWindowManager
 	{

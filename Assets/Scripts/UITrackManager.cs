@@ -4,9 +4,9 @@ using UnityEngine.EventSystems;
 using System.Collections.Generic;
 using System;
 
-namespace TheDarkVoid
+namespace com.LuminousVector
 {
-	public class UITrackManager : MonoBehaviour, IPointerClickHandler, IDragHandler, IDropHandler
+	public class UITrackManager : MonoBehaviour, IPointerClickHandler, IDragHandler, IEndDragHandler
 	{
 		//Public
 		public GameObject instance
@@ -25,7 +25,7 @@ namespace TheDarkVoid
 		private GameObject _instance;
 		private Image _image;
 		private float _left;
-		private float _startPos;
+		private float _startPos = Mathf.NegativeInfinity;
 		private UIBeatManager _prevBeat;
 
 		//Set the inital values of the Track
@@ -40,9 +40,7 @@ namespace TheDarkVoid
 			RenderBeats();
 
 			Transform beat;
-			Utils.CreateUIImage(beatPrefab,
-				Vector2.zero,
-				_beatParent, out beat);
+			Utils.CreateUIImage(beatPrefab, Vector2.zero, _beatParent, out beat);
 			_prevBeat = beat.GetComponent<UIBeatManager>();
 			_prevBeat.Set(new Beat(0f));
 			beat.gameObject.SetActive(false);
@@ -119,32 +117,29 @@ namespace TheDarkVoid
 			{
 				if (!eventData.dragging)
 					AddBeat(Utils.TransformToTime(eventData.position.x, _left));
-				else
-				{
-					_startPos = eventData.position.x;
-					_prevBeat.instance.gameObject.SetActive(true);
-				}
 			}
-		}
-
-		public void OnDrop(PointerEventData eventData)
-		{
-			_prevBeat.instance.gameObject.SetActive(false);
-			float time = (_startPos < eventData.position.x) ?
-				Utils.TransformToTime(eventData.position.x, _left) : 
-				Utils.TransformToTime(_startPos, _left);
-			float duration = Utils.TransformToTime(Math.Abs(eventData.position.x - _startPos),
-				_left);
-            AddBeat(time, duration);
 		}
 
 		public void OnDrag(PointerEventData eventData)
 		{
-			float time = (_startPos < eventData.position.x) ? _startPos : eventData.position.x;
-			float duration = Utils.TransformToTime(Math.Abs(eventData.position.x - _startPos),
-				_left);
-			_prevBeat.positon = new Vector2(time, 0);
+			if(_startPos == Mathf.NegativeInfinity)
+			{
+				_startPos = eventData.position.x - _left;
+				_prevBeat.instance.gameObject.SetActive(true);
+			}
+			float curPos = (_startPos < eventData.position.x - _left) ? _startPos : eventData.position.x - _left;
+			float duration = Utils.TransformToTime(Math.Abs(eventData.position.x - _startPos - _left), 0);
+			_prevBeat.positon = new Vector2(curPos, 0);
 			_prevBeat.duration = duration;
+		}
+
+		public void OnEndDrag(PointerEventData eventData)
+		{
+			float time = (_startPos < eventData.position.x - _left) ? Utils.TransformToTime(_startPos, 0) : Utils.TransformToTime(eventData.position.x, _left);
+			float duration = Utils.TransformToTime(Math.Abs(eventData.position.x - _startPos - _left), 0);
+            AddBeat(time, duration);
+			_prevBeat.instance.gameObject.SetActive(false);
+			_startPos = Mathf.NegativeInfinity;
 		}
 	}
 }

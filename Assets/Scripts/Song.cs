@@ -3,7 +3,7 @@ using ProtoBuf;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace TheDarkVoid
+namespace com.LuminousVector
 {
 	[ProtoContract]
 	public class Song
@@ -53,16 +53,21 @@ namespace TheDarkVoid
 
 		public Song(string songPath, int trackCount)
 		{
-			this.info = new SongInfo("no title", "no artist", "no album", "no year", "normal");
+			this.info = new SongInfo("no title", "no artist", "no album", "no year", "normal", GameRegistry.GetString("UserName"));
 			this.songPath = songPath;
 			this.trackCount = trackCount;
 			FillTracks(trackCount);
 		}
 
+		public Song SetSongPath(string path)
+		{
+			songPath = "/Songs" + path;
+			return this;
+		}
+
 		public IEnumerator LoadAudioClip(string action)
 		{
-			//Debug.Log("file:///" + Application.dataPath + "/Music/Song.wav");
-            WWW file = new WWW("file:///" + Application.dataPath + "/Songs/SongName/Song.wav");
+            WWW file = new WWW("file:///" + Application.dataPath + songPath);
 			_song = file.GetAudioClip(false, false);
 			while(_song.loadState != AudioDataLoadState.Loaded)
 				yield return file;
