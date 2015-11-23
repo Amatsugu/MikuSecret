@@ -28,7 +28,7 @@ namespace com.LuminousVector
 		public float hitRange = 0.5f;
 		public float trackSpacing = 20;
 		public AnimationCurve errorCurve;
-		public float score;
+		public float score, combo;
 		public float beatValue = 300;
 		public float hitParticleCount = 300;
 		public float particleSpeed = 10;
@@ -132,6 +132,7 @@ namespace com.LuminousVector
 							//Checks if there was a hit
 							if (Mathf.Abs(_curProgress - b.time) <= hitRange)
 							{
+								combo++;
 								//Marks a beat as being hit
 								b.hit = true;
 								//Calculates the hit accuracy
@@ -147,7 +148,7 @@ namespace com.LuminousVector
 							}
 							//Checks for a miss
 							else if (Mathf.Abs(_curProgress - b.time) <= hitRange + hitZoneSize)
-								Debug.Log("Miss");
+								combo = 0;
 						}
 					}
 					else
@@ -158,6 +159,7 @@ namespace com.LuminousVector
 							if (Mathf.Abs(_curProgress - b.time) <= hitRange)
 								if (Input.GetKeyDown(key))
 								{
+									combo++;
 									b.startAcc = CalculateAcc(b.time);
 									b.hitStart = _curProgress;
 									SpawnParticles((int)(b.startAcc * hitParticleCount), b.GetPosition(), b.startAcc, _song.tracks[i].color);
@@ -170,7 +172,7 @@ namespace com.LuminousVector
 							{
 								if (_curProgress <= b.time + b.duration)
 								{
-									score += Mathf.Round(beatValue * Time.deltaTime);
+									score += Mathf.Round(beatValue * Time.deltaTime * combo);
 									SpawnParticles((int)Mathf.Round(hitParticleCount * Time.deltaTime * b.startAcc), b.GetPosition(), b.startAcc, _song.tracks[i].color);
 									scoreText.text = score.ToString();
 								}
@@ -184,11 +186,12 @@ namespace com.LuminousVector
 									//Calculates hit accuracy
 									float hitValue = CalculateAcc(b.time - b.duration);
 									//Adds scire
-									score += hitValue * beatValue;
+									score += hitValue * beatValue * combo;
 									scoreText.text = score.ToString();
 								}
 								else
 								{
+									combo = 0;
 									Debug.Log("Miss, Long");
 								}
 								//Marks the beat for removal 

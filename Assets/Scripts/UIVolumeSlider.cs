@@ -36,7 +36,8 @@ namespace com.LuminousVector.com
 		void Start()
 		{
 			DontDestroyOnLoad(gameObject);
-			if (FindObjectOfType<UIVolumeSlider>() as UIVolumeSlider != gameObject)
+			DontDestroyOnLoad(transform.parent.gameObject);
+			if (FindObjectOfType<UIVolumeSlider>() as UIVolumeSlider != this)
 				Destroy(gameObject);
 			_fadeAmmount = 0;
 			slider.fillAmount = _targetVol = AudioListener.volume;
@@ -48,7 +49,6 @@ namespace com.LuminousVector.com
 			if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
 			{
 				float deltaS = Input.GetAxis("Mouse ScrollWheel");
-				Debug.Log(deltaS);
 				if (deltaS != 0)
 				{
 					_timeout = fadeDelay + Time.time;

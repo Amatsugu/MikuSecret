@@ -78,6 +78,8 @@ namespace com.LuminousVector
 			_dataPath = Application.dataPath + "/Songs";
 			_mode = TimelineMode.sec;
 			_curSong = Song.loadSong(File.ReadAllBytes(_dataPath + "/SongName/Song.SongData"));
+			
+			//File.WriteAllBytes(_dataPath + "/SongName/Song.SongData", _curSong.getSongData());
 			_audio = GetComponent<AudioSource>();
 			_audio.playOnAwake = false;
 			_audio.Stop();
@@ -235,8 +237,8 @@ namespace com.LuminousVector
 			dir = (dir >= 0) ? 10 : -10;
 			float curTime = _audio.time;
 			curTime += dir;
-			curTime = (curTime > songLength) ? songLength : (curTime < 0) ? 0 : curTime;
-			_audio.time += curTime;
+			curTime = (curTime > _songLength) ? _songLength : (curTime < 0) ? 0 : curTime;
+			_audio.time = curTime;
 		}
 
 		//Change the playback speed
@@ -249,15 +251,30 @@ namespace com.LuminousVector
 		//Play the song
 		public void Play()
 		{
-			_audio.Play();
-			SetAudioTime();
+			if (_audio.isPlaying)
+			{
+				Pause();
+			}
+			else
+			{
+				_audio.Play();
+				SetAudioTime();
+				CancelInvoke("SetTimeReadout");
+				InvokeRepeating("SetTimeReadout", 0, .01f);
+				_audio.pitch = 1;
+			}
+		}
+
+		//Pause the song
+		public void Pause()
+		{
+			_audio.Pause();
 			CancelInvoke("SetTimeReadout");
-			InvokeRepeating("SetTimeReadout", 0, .01f);
-			_audio.pitch = 1;
+			SetPlayHead();
 		}
 
 		//Stop the song
-		public void Pause()
+		public void Stop()
 		{
 			_audio.Stop();
 			CancelInvoke("SetTimeReadout");
@@ -341,6 +358,7 @@ namespace com.LuminousVector
 		//Show SongInfo
 		public void OpenSongInfoWindow()
 		{
+			songInfoWindow.Set(_curSong.info.title);
 			songInfoWindow.OpenWindow();
 		}
 
