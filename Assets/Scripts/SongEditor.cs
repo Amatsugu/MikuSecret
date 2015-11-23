@@ -36,6 +36,7 @@ namespace com.LuminousVector
 		public Image songProgressBar;
 		public RectTransform trackScrollView;
 		public UITrackConfigWindow trackConfigWindow;
+		public UISongConfigurationWindow songInfoWindow;
 		public float minThreshold = 20f;
 		public float playHeadPos = 0;
 		public float padding = 5f;
@@ -232,7 +233,10 @@ namespace com.LuminousVector
 		public void TimeStep(int dir)
 		{
 			dir = (dir >= 0) ? 10 : -10;
-			_audio.time += dir;
+			float curTime = _audio.time;
+			curTime += dir;
+			curTime = (curTime > songLength) ? songLength : (curTime < 0) ? 0 : curTime;
+			_audio.time += curTime;
 		}
 
 		//Change the playback speed
@@ -333,6 +337,13 @@ namespace com.LuminousVector
 		{
 			trackConfigWindow.CloseWindow();
 		}
+
+		//Show SongInfo
+		public void OpenSongInfoWindow()
+		{
+			songInfoWindow.OpenWindow();
+		}
+
 
 		//Destroy exsisting tracks
 		public void DestroyTracks()

@@ -36,7 +36,7 @@ namespace com.LuminousVector
 		void Start()
 		{
 			DontDestroyOnLoad(gameObject);
-			if (FindObjectOfType<GameRegistry>() as GameRegistry != gameObject)
+			if (FindObjectOfType<GameRegistry>() as GameRegistry != this)
 				Destroy(gameObject);
 		}
 

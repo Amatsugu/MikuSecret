@@ -40,7 +40,7 @@ namespace com.LuminousVector
 		void Start()
 		{
 			DontDestroyOnLoad(gameObject);
-			if (FindObjectOfType<EventManager>() as EventManager != gameObject)
+			if (FindObjectOfType<EventManager>() as EventManager != this)
 				Destroy(gameObject);
 		}
 

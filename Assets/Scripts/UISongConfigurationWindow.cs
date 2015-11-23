@@ -38,11 +38,11 @@ namespace com.LuminousVector
 		public void SaveAndClose()
 		{
 			shouldClose = true;
-			_songInfo.title = songNameField.text;
-			_songInfo.artist = artistNameField.text;
-			_songInfo.album = albumNameField.text;
-			_songInfo.year = releasedYearField.text;
-			_songInfo.creator = creatorNameField.text;
+			//_songInfo.title = songNameField.text;
+			//_songInfo.artist = artistNameField.text;
+			//_songInfo.album = albumNameField.text;
+			//_songInfo.year = releasedYearField.text;
+			//_songInfo.creator = creatorNameField.text;
 			CloseWindow();
 		}
 	}

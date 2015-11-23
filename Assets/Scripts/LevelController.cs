@@ -17,4 +17,9 @@ public class LevelController : MonoBehaviour
 	{
 		Application.LoadLevel("songEditor");
 	}
+
+	public void GoToExplorer()
+	{
+		Application.LoadLevel("songBrowser");
+	}
 }
