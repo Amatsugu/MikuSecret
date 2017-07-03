@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 
-namespace com.LuminousVector
+namespace LuminousVector
 {
 	public class Particle : MonoBehaviour
 	{

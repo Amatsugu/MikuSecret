@@ -1,10 +1,11 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace com.LuminousVector
+namespace LuminousVector
 {
 
 	[RequireComponent(typeof(AudioSource))]
@@ -44,8 +45,9 @@ namespace com.LuminousVector
 		private List<Beat> _beatsToRemove = new List<Beat>();
 		private List<int> _targetRemovalTrack = new List<int>();
 		private int _trackCount;
-		private ControlMap _controls;
+		private TrackControlMap _controls;
 		private string _dataPath;
+		private float _loadTimer;
 
 		void Start()
 		{
@@ -53,21 +55,20 @@ namespace com.LuminousVector
 			_dataPath = Application.dataPath + "/Songs/";
 			//Cache the audio source
 			_src = GetComponent<AudioSource>();
-			//get the song length
-			//Cache the size of the progressBar
-			//Generate the song
-			//GenerateSong();
-			//_song = null;
-			byte[] songData = File.ReadAllBytes(_dataPath + "SongName/Song.SongData");
+			if (GameRegistry.GetString("CUR_SONG") == null)
+				GameRegistry.SetValue("CUR_SONG", "SongName");
+			byte[] songData = File.ReadAllBytes(_dataPath + GameRegistry.GetString("CUR_SONG") +"/Song.SongData");
 			_song = Song.loadSong(songData);
 			EventManager.StartListening("loadSong", SongReady);
 			StartCoroutine(_song.LoadAudioClip("loadSong"));
+			_loadTimer = Time.time;
 			//_src.clip = _song.song;
 			//_songLength = _src.clip.length;
 		}
 
 		void SongReady()
 		{
+			Debug.Log("Song loaded in " + (Time.time - _loadTimer) + "ms");
 			EventManager.StopListening("loadSong", SongReady);
 			_src.clip = _song.song;
 			if (_src.clip != null)
@@ -82,6 +83,9 @@ namespace com.LuminousVector
 			{
 				return;
 			}
+			if (GameRegistry.GetBool("isEditing"))
+				if (Input.GetKeyUp(KeyCode.Escape))
+					SceneManager.LoadScene("songEditor");
 			//Render Time
 			_curProgress = _src.time;
 			int m = (int)(_curProgress / 60);
@@ -261,7 +265,7 @@ namespace com.LuminousVector
 			//Cache Track Count
 			_trackCount = _song.trackCount;
 			//Assign default controls
-			_controls = new ControlMap().AddMap(new KeyMap(), _trackCount);
+			_controls = new TrackControlMap().AddMap(new KeyMap(), _trackCount);
 			//Assign track positions
 			for (int i = 0; i <= _trackCount; i++)
 				_basePositions.Add(Vector2.zero);

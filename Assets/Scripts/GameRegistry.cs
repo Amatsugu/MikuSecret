@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-namespace com.LuminousVector
+namespace LuminousVector
 {
 	public class GameRegistry : MonoBehaviour
 	{
@@ -28,10 +28,14 @@ namespace com.LuminousVector
 			}
 		}
 		//Private
-		private static Dictionary<string, string> stringStore;
-		private static Dictionary<string, int> intStore;
-		private static Dictionary<string, bool> boolStore;
-		private static Dictionary<string, float> floatStore;
+		[SerializeField]
+		private Dictionary<string, string> stringStore;
+		[SerializeField]
+		private Dictionary<string, int> intStore;
+		[SerializeField]
+		private Dictionary<string, bool> boolStore;
+		[SerializeField]
+		private Dictionary<string, float> floatStore;
 
 		void Start()
 		{
@@ -40,7 +44,7 @@ namespace com.LuminousVector
 				Destroy(gameObject);
 		}
 
-		public void Init()
+		void Init()
 		{
 			stringStore = new Dictionary<string, string>();
 			intStore = new Dictionary<string, int>();
@@ -51,68 +55,118 @@ namespace com.LuminousVector
 		public static string GetString(string id)
 		{
 			string value;
-			stringStore.TryGetValue(id, out value);
+			instance.stringStore.TryGetValue(id, out value);
+			if (value == null)
+				value = "";
 			return value;
+		}
+
+		public static string GetString(string id, string defaultValue)
+		{
+			if (instance.floatStore.ContainsKey(id))
+				return GetString(id);
+			else
+				SetValue(id, defaultValue);
+			return defaultValue;
 		}
 
 		public static int GetInt(string id)
 		{
 			int value;
-			intStore.TryGetValue(id, out value);
+			instance.intStore.TryGetValue(id, out value);
 			return value;
+		}
+
+		public static int GetInt(string id, int defaultValue)
+		{
+			if (instance.floatStore.ContainsKey(id))
+				return GetInt(id);
+			else
+				SetValue(id, defaultValue);
+			return defaultValue;
 		}
 
 		public static bool GetBool(string id)
 		{
 			bool value;
-			boolStore.TryGetValue(id, out value);
+			instance.boolStore.TryGetValue(id, out value);
 			return value;
+		}
+
+		public static bool GetBool(string id, bool defaultValue)
+		{
+			if (instance.boolStore.ContainsKey(id))
+				return GetBool(id);
+			else
+				SetValue(id, defaultValue);
+			return defaultValue;
 		}
 
 		public static float GetFloat(string id)
 		{
 			float value;
-			floatStore.TryGetValue(id, out value);
+			instance.floatStore.TryGetValue(id, out value);
 			return value;
+		}
+
+		public static float GetFloat(string id, float defaultValue)
+		{
+			if (instance.floatStore.ContainsKey(id))
+				return GetFloat(id);
+			else
+				SetValue(id, defaultValue);
+			return defaultValue;
 		}
 
 		public static void SetValue(string id, string value)
 		{
-			stringStore.Add(id, value);
+			if (instance.stringStore.ContainsKey(id))
+				instance.stringStore[id] = value;
+			else
+				instance.stringStore.Add(id, value);
 		}
 
 		public static void SetValue(string id, int value)
 		{
-			intStore.Add(id, value);
+			if (instance.intStore.ContainsKey(id))
+				instance.intStore[id] = value;
+			else
+				instance.intStore.Add(id, value);
 		}
 
 		public static void SetValue(string id, bool value)
 		{
-			boolStore.Add(id, value);
+			if (instance.boolStore.ContainsKey(id))
+				instance.boolStore[id] = value;
+			else
+				instance.boolStore.Add(id, value);
 		}
 
 		public static void SetValue(string id, float value)
 		{
-			floatStore.Add(id, value);
+			if (instance.floatStore.ContainsKey(id))
+				instance.floatStore[id] = value;
+			else
+				instance.floatStore.Add(id, value);
 		}
 
 		public static void RemoveEntry<T>(string id)
 		{
 			if (typeof(T) == typeof(string))
 			{
-				stringStore.Remove(id);
+				instance.stringStore.Remove(id);
 			}
 			else if (typeof(T) == typeof(int))
 			{
-				intStore.Remove(id);
+				instance.intStore.Remove(id);
 			}
 			else if (typeof(T) == typeof(bool))
 			{
-				boolStore.Remove(id);
+				instance.boolStore.Remove(id);
 			}
 			else if (typeof(T) == typeof(float))
 			{
-				floatStore.Remove(id);
+				instance.floatStore.Remove(id);
 			}
 			else
 				Debug.LogError("No such type in Game Registry: " + typeof(T));

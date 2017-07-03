@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.Audio;
 using System.Collections;
 
-namespace com.LuminousVector
+namespace LuminousVector
 {
 	public class VolumeSlider : MonoBehaviour
 	{

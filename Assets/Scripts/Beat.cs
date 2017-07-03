@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 
-namespace com.LuminousVector
+namespace LuminousVector
 {
 	[ProtoContract]
 	public class Beat

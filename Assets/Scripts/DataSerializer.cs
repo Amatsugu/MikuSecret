@@ -4,7 +4,7 @@ using System.IO;
 using System.Text;
 using ProtoBuf.Meta;
 
-namespace com.LuminousVector
+namespace LuminousVector
 {
 	public static class DataSerializer
 	{

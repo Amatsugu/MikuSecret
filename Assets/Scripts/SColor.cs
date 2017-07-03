@@ -2,7 +2,7 @@ using UnityEngine;
 using ProtoBuf;
 using System.Collections;
 
-namespace com.LuminousVector
+namespace LuminousVector
 {
 	[ProtoContract]
 	public class SColor

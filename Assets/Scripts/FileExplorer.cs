@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 //using Mp3Sharp;
 //using TagLib;
 using System;
@@ -7,7 +8,7 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace com.LuminousVector
+namespace LuminousVector
 {
 	public class FileExplorer : MonoBehaviour
 	{
@@ -16,11 +17,8 @@ namespace com.LuminousVector
 		public float spacing;
 		public GameObject directoryItem;
 		public Text curDirText;
-		public Text selectedFileText;
-		public Text titleText;
-		public Text artistText;
-		public Text albumText;
-		public InputField songNameField;
+		public UICreateSongWindow createWindow;
+		public UILoadSongWindow loadWindow;
 		//Private
 		private List<string> _directories = new List<string>();
 		private List<string> _files = new List<string>();
@@ -48,11 +46,6 @@ namespace com.LuminousVector
 			SetCurrentDirectory(Application.dataPath + "");
 			//List the items in the directory
 			ListDirectoryItems();
-		}
-
-		void Update()
-		{
-			//Debug.Log();
 		}
 
 		//Set the current browsing directory
@@ -141,20 +134,46 @@ namespace com.LuminousVector
 		}
 
 		//Creates a directory UI listing
-		void CreateDirectoryItem(string name)
+		void CreateDirectoryItem(string path)
 		{
 			GameObject item = CreateUIElement(directoryItem, new Vector2(0, -_curPos));
-			string n = name;
-			if (name != "..")
+			string n = path;
+			if (path != "..")
 			{
-				n = Path.GetFileName(name);
+				n = Path.GetFileName(path);
 			}
-			if (_extentions.Contains(Path.GetExtension(n)))
+			if (_extentions.Contains(Path.GetExtension(n)) || CheckForSongData(path))
 				item.GetComponent<Button>().image.color = Color.cyan;
 			item.GetComponentInChildren<Text>().text = n;
-			AddListener(item.GetComponent<Button>(), name);
+			AddListener(item.GetComponent<Button>(), path);
 			_directoryItems.Add(item);
 			_curPos += spacing;
+		}
+
+		//Check for songData
+		bool CheckForSongData(string path)
+		{
+			string[] files = Directory.GetFiles(path);
+			bool file = false, data = false;
+			foreach(string s in files)
+			{
+				data = (data) ? data : Path.GetFileName(s) == "Song.SongData";
+				file = (file) ? file : _extentions.Contains(Path.GetExtension(s)) && (Path.GetFileNameWithoutExtension(s) == "Song");
+			}
+			return file && data;
+		}
+
+		//Find the song file
+		string GetSongFile(string path)
+		{
+			string[] files = Directory.GetFiles(path);
+			string file = null;
+			foreach (string s in files)
+			{
+				if (_extentions.Contains(Path.GetExtension(s)) && (Path.GetFileNameWithoutExtension(s) == "Song"))
+					file = s;
+			}
+			return file;
 		}
 
 		//Add the onClick listener to the UI elements
@@ -183,26 +202,22 @@ namespace com.LuminousVector
 						//LoadMp3File(item);
 					}
 					_selectedFile = item;
-					selectedFileText.text = "File: " + Path.GetFileName(item);
-					titleText.text = "Title: " + (songNameField.text = Path.GetFileNameWithoutExtension(item));
-					//TODO: Fix taglib
-					/*TagLib.File file = TagLib.File.Create(item);
-					Tag t = file.Tag;
-					Debug.Log(file.Tag.FirstPerformer);
-					titleText.text = "Title: " + t.Title;
-					if (ext == ".wav")
+					createWindow.OpenWindow();
+					createWindow.Set(this, _selectedFile);
+				}
+				else if(CheckForSongData(item))
+				{
+					string file = GetSongFile(item);
+					ext = Path.GetExtension(file);
+					ClearSelection();
+					if (ext != ".mp3")
+						StartCoroutine(LoadSongFile(file));
+					else
 					{
-						artistText.text = "Artist: " + t.FirstAlbumArtist;
-						albumText.text = "Album: " + t.Album;
-					}else
-					{
-						artistText.text = "Artist: " + t.FirstPerformer;
-						albumText.text = "Album: " + t.Album;
+						//LoadMp3File(item);
 					}
-					string title = t.Title;
-					if (title == null)
-						title = Path.GetFileNameWithoutExtension(item);
-					songNameField.text = title;*/
+					loadWindow.OpenWindow();
+					loadWindow.Set(this, item);
 				}
 				else
 				{
@@ -210,11 +225,6 @@ namespace com.LuminousVector
 					ListDirectoryItems();
 				}
 			}
-		}
-
-		public void SetTitle(string title)
-		{
-			titleText.text = "Title: " + title;
 		}
 
 		//Moves up a diectory
@@ -243,7 +253,6 @@ namespace com.LuminousVector
 		//Load an audio file
 		IEnumerator LoadSongFile(string path)
 		{
-			Debug.Log("file:///" + path);
 			WWW file = new WWW("file:///" + path);
 			_song = file.GetAudioClip(false, false);
 			while (_song.loadState != AudioDataLoadState.Loaded)
@@ -294,18 +303,26 @@ namespace com.LuminousVector
 
 		public void ClearSelection()
 		{
-			songNameField.text = "";
-			selectedFileText.text = "File: No File Selected";
+			//songNameField.text = "";
+			//selectedFileText.text = "File: No File Selected";
+			_selectedFile = null;
 			_src.Stop();
 			_src.clip = null;
 			_song = null;
 		}
 
-		public void CreateSong()
+		public void CreateSong(Song song)
 		{
-			GameRegistry.SetValue("SongToLoad", _selectedFile);
-			GameRegistry.SetValue("SongName", songNameField.text);
-			Application.LoadLevel("songEditor");
+			string curPath = _dataPath + "/" + GameRegistry.GetString("CUR_SONG");
+			Directory.CreateDirectory(curPath);
+			if (!File.Exists(_dataPath + "/" + GameRegistry.GetString("CUR_SONG") + "/" + Path.GetFileName(song.songPath)))
+			{
+				string newPath = GameRegistry.GetString("CUR_SONG") + "/" + Path.GetFileName(song.songPath);
+				File.Copy(_dataPath + "/" + song.songPath, _dataPath + "/" + newPath);
+				song.songPath = newPath;
+			}
+			File.WriteAllBytes(curPath + "/Song.SongData", song.getSongData());
+			SceneManager.LoadScene("songEditor");
 		}
 	}
 }

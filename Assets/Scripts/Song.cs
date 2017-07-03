@@ -3,7 +3,7 @@ using ProtoBuf;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace com.LuminousVector
+namespace LuminousVector
 {
 	[ProtoContract]
 	public class Song
@@ -24,9 +24,20 @@ namespace com.LuminousVector
 			}
 		}
 		public bool isLoaded = false;
+		public string songPath
+		{
+			set
+			{
+				_songPath = value;
+			}
+			get
+			{
+				return _songPath;
+			}
+		}
 
 		[ProtoMember(4)]
-		private string songPath;
+		private string _songPath;
 		private AudioClip _song;
 
 		public Song()
@@ -59,15 +70,10 @@ namespace com.LuminousVector
 			FillTracks(trackCount);
 		}
 
-		public Song SetSongPath(string path)
-		{
-			songPath = "/Songs" + path;
-			return this;
-		}
-
 		public IEnumerator LoadAudioClip(string action)
 		{
-            WWW file = new WWW("file:///" + Application.dataPath + songPath);
+			Debug.Log("file:///" + Application.dataPath + "/Songs" + songPath);
+            WWW file = new WWW("file:///" + Application.dataPath + "/Songs"+ songPath);
 			_song = file.GetAudioClip(false, false);
 			while(_song.loadState != AudioDataLoadState.Loaded)
 				yield return file;
@@ -75,6 +81,7 @@ namespace com.LuminousVector
 			if(action != "")
 				EventManager.TriggerEvent(action);
 		}
+
 
 		public void AddTrack(Track track)
 		{
@@ -108,7 +115,7 @@ namespace com.LuminousVector
 		{
 			this.tracks = new List<Track>(trackCount);
 			for(int i = 0; i < count; i++)
-				this.tracks.Add(new Track(new Color(Random.Range(0f, 1f), Random.Range(0f, 0f), Random.Range(0f, 1f), 1f)));
+				this.tracks.Add(new Track(new Color(Random.Range(0f, 1f), Random.Range(0f, 0f), Random.Range(0f, 1f), 1f), "Track " + i));
 		}
 
 		public static Song loadSong(byte[] songData)

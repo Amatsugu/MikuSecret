@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-namespace com.LuminousVector
+namespace LuminousVector
 {
 	[RequireComponent(typeof(AudioSource))]
 	public class Sequencer : MonoBehaviour

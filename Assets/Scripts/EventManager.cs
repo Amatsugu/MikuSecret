@@ -1,9 +1,10 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.Events;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace com.LuminousVector
+namespace LuminousVector
 {
 	public class EventManager : MonoBehaviour
 	{
@@ -31,12 +32,6 @@ namespace com.LuminousVector
 			}
 		}
 
-		void OnLevelWasLoaded(int level)
-		{
-			if(eventDictionary != null)
-				eventDictionary.Clear();
-		}
-
 		void Start()
 		{
 			DontDestroyOnLoad(gameObject);
@@ -50,7 +45,13 @@ namespace com.LuminousVector
 			{
 				eventDictionary = new Dictionary<string, UnityEvent>();
 			}
+			SceneManager.sceneLoaded += (s,m) =>
+			{
+				if (eventDictionary != null)
+					eventDictionary.Clear();
+			};
 		}
+
 
 		public static void StartListening(string eventName, UnityAction listener)
 		{

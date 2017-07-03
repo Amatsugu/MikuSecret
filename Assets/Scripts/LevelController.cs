@@ -1,25 +1,26 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections;
 
 public class LevelController : MonoBehaviour
 {
 	public void Reset()
 	{
-		Application.LoadLevel(Application.loadedLevel);
+		SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
 	}
 
 	public void GoToPlayer()
 	{
-		Application.LoadLevel("main");
+		SceneManager.LoadScene("main");
 	}
 
 	public void GoToEditor()
 	{
-		Application.LoadLevel("songEditor");
+		SceneManager.LoadScene("songEditor");
 	}
 
 	public void GoToExplorer()
 	{
-		Application.LoadLevel("songBrowser");
+		SceneManager.LoadScene("songBrowser");
 	}
 }
